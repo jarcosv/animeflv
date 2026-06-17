@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - AnimeFLV</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; padding: 30px 20px; }
+    
+    .container { max-width: 900px; margin: 0 auto; }
+    
+    h1 { font-size: 28px; font-weight: 600; margin-bottom: 10px; color: #0ea5e9; }
+    .subtitle { color: #aaa; margin-bottom: 30px; font-size: 14px; }
+    
+    .section { background: #242424; padding: 25px; border-radius: 8px; margin-bottom: 20px; }
+    .section-title { font-size: 16px; font-weight: 600; color: #0ea5e9; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #333; }
+    
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: #aaa; margin-bottom: 8px; }
+    
+    textarea { 
+      width: 100%; 
+      min-height: 300px; 
+      padding: 15px; 
+      background: #1a1a1a; 
+      border: 1px solid #333; 
+      color: #fff; 
+      border-radius: 4px; 
+      font-family: 'Courier New', monospace; 
+      font-size: 12px;
+      resize: vertical;
+    }
+    
+    textarea:focus { outline: 0; border-color: #0ea5e9; }
+    
+    .help-text { font-size: 11px; color: #666; margin-top: 8px; line-height: 1.5; }
+    
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+    
+    .btn { 
+      padding: 10px 20px; 
+      border: 0; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-size: 12px; 
+      font-weight: 600; 
+      transition: background 0.2s;
+    }
+    
+    .btn-primary { background: #0ea5e9; color: #fff; }
+    .btn-primary:hover { background: #06b6d4; }
+    .btn-primary:disabled { background: #555; cursor: not-allowed; }
+    
+    .btn-secondary { background: #333; color: #fff; }
+    .btn-secondary:hover { background: #444; }
+    
+    .preview { background: #1a1a1a; padding: 15px; border-radius: 4px; margin-top: 20px; border-left: 3px solid #0ea5e9; }
+    .preview-title { color: #0ea5e9; font-weight: 600; margin-bottom: 10px; }
+    .preview-item { padding: 10px; background: #242424; border-radius: 3px; margin-bottom: 8px; font-size: 11px; }
+    .preview-item strong { color: #0ea5e9; }
+    
+    .alert { padding: 15px; border-radius: 4px; margin-top: 15px; font-size: 12px; }
+    .alert-success { background: #064e3b; color: #86efac; border-left: 3px solid #16a34a; }
+    .alert-error { background: #7f1d1d; color: #fca5a5; border-left: 3px solid #dc2626; }
+    .alert-info { background: #0c4a6e; color: #7dd3fc; border-left: 3px solid #0ea5e9; }
+    
+    .format-example {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      border-left: 3px solid #666;
+      font-size: 11px;
+      font-family: 'Courier New', monospace;
+      overflow-x: auto;
+      color: #aaa;
+      line-height: 1.4;
+    }
+    
+    @media (max-width: 768px) {
+      body { padding: 15px 10px; }
+      .btn-group { flex-direction: column; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎌 Importador de Animes</h1>
+    <p class="subtitle">Importa episodios masivos desde paquetes JSON</p>
+
+    <div class="section">
+      <div class="section-title">📥 Importar Episodios Masivos</div>
+      
+      <div class="format-example">
+        <strong>Formato JSON esperado:</strong><br><br>
+Titulo del Anime<br><br>
+{"import_type":"bulk_package","anime_cover":"https://...jpg","chapters":[<br>
+{"chapter_number":1,"server_name":"Servidor1","embed_url":"https://..."},<br>
+{"chapter_number":2,"server_name":"Servidor1","embed_url":"https://..."}<br>
+]}
+      </div>
+
+      <form id="bulkImportForm">
+        <div class="form-group">
+          <label for="jsonInput">Pega aquí el título del anime y el JSON:</label>
+          <textarea id="jsonInput" placeholder="Título del anime&#10;&#10;{&quot;import_type&quot;:&quot;bulk_package&quot;,&quot;anime_cover&quot;:&quot;https://...jpg&quot;,&quot;chapters&quot;:[{&quot;chapter_number&quot;:1,&quot;server_name&quot;:&quot;SW&quot;,&quot;embed_url&quot;:&quot;https://...&quot;}]}"></textarea>
+          
+          <p class="help-text">
+            ✓ El importador detecta portada del anime con <strong>anime_cover</strong> o <strong>image_url</strong><br>
+            ✓ Si un anime no existe, se crea automáticamente<br>
+            ✓ Soporta múltiples servidores por episodio<br>
+            ✓ Se deduplican episodios automáticamente
+          </p>
+        </div>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary" onclick="analyzeImport()">
+            <i class="fas fa-search"></i> Analizar
+          </button>
+          <button type="submit" class="btn btn-primary" id="importBtn" disabled>
+            <i class="fas fa-upload"></i> Importar Episodios
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="clearInput()">
+            <i class="fas fa-trash"></i> Limpiar
+          </button>
+        </div>
+
+        <div id="preview"></div>
+        <div id="status"></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    let parsedData = null;
+
+    function analyzeImport() {
+      const input = document.getElementById('jsonInput').value.trim();
+      const preview = document.getElementById('preview');
+      const importBtn = document.getElementById('importBtn');
+      
+      if (!input) {
+        preview.innerHTML = '<div class="alert alert-error">Por favor pega el contenido</div>';
+        importBtn.disabled = true;
+        return;
+      }
+
+      try {
+        // Separar título del JSON
+        const lines = input.split('\n').map(l => l.trim()).filter(l => l);
+        let title = '';
+        let jsonStr = '';
+
+        // Buscar dónde empieza el JSON
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].startsWith('{')) {
+            title = lines.slice(0, i).join(' ').trim();
+            jsonStr = lines.slice(i).join('\n');
+            break;
+          }
+        }
+
+        if (!title) title = 'Anime Importado';
+
+        const data = JSON.parse(jsonStr);
+
+        // Validar estructura
+        if (!data.chapters || !Array.isArray(data.chapters)) {
+          throw new Error('No hay capítulos en el JSON');
+        }
+
+        parsedData = {
+          title: title || data.anime_title || 'Anime Importado',
+          cover: data.anime_cover || data.image_url || null,
+          chapters: data.chapters
+        };
+
+        // Agrupar episodios
+        const episodeMap = new Map();
+        parsedData.chapters.forEach(ch => {
+          if (!episodeMap.has(ch.chapter_number)) {
+            episodeMap.set(ch.chapter_number, []);
+          }
+          episodeMap.get(ch.chapter_number).push({
+            server_name: ch.server_name || 'Servidor',
+            embed_url: ch.embed_url
+          });
+        });
+
+        // Mostrar preview
+        let previewHtml = `
+          <div class="preview">
+            <div class="preview-title">✓ Análisis completado</div>
+            <div class="preview-item"><strong>Anime:</strong> ${parsedData.title}</div>
+            <div class="preview-item"><strong>Portada:</strong> ${parsedData.cover ? '✓ Detectada' : '✗ Sin portada'}</div>
+            <div class="preview-item"><strong>Episodios:</strong> ${episodeMap.size}</div>
+            <div class="preview-item"><strong>Servidores:</strong> ${parsedData.chapters.length}</div>
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #333;">
+              <strong>Episodios a importar:</strong><br>
+        `;
+
+        [...episodeMap.entries()].sort((a, b) => a[0] - b[0]).forEach(([ep, servers]) => {
+          previewHtml += `
+            <div style="margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 3px; font-size: 11px;">
+              Ep ${ep}: ${servers.length} servidor${servers.length !== 1 ? 'es' : ''}
+              (${servers.map(s => s.server_name).join(', ')})
+            </div>
+          `;
+        });
+
+        previewHtml += `</div></div>`;
+        preview.innerHTML = previewHtml;
+        importBtn.disabled = false;
+
+      } catch (err) {
+        preview.innerHTML = `<div class="alert alert-error">❌ Error: ${err.message}</div>`;
+        importBtn.disabled = true;
+      }
+    }
+
+    async function importAnime(e) {
+      e.preventDefault();
+
+      if (!parsedData) {
+        alert('Por favor haz clic en Analizar primero');
+        return;
+      }
+
+      const status = document.getElementById('status');
+      const importBtn = document.getElementById('importBtn');
+      
+      try {
+        importBtn.disabled = true;
+        status.innerHTML = '<div class="alert alert-info">⏳ Importando...</div>';
+
+        // Crear anime
+        const animeData = {
+          titulo: parsedData.title,
+          imagen: parsedData.cover,
+          tipo: 'TV'
+        };
+
+        const insertedAnime = await db.insertAnime(animeData);
+        const animeId = insertedAnime[0]?.id;
+
+        if (!animeId) throw new Error('No se pudo crear el anime');
+
+        // Agrupar episodios
+        const episodeMap = new Map();
+        parsedData.chapters.forEach(ch => {
+          if (!episodeMap.has(ch.chapter_number)) {
+            episodeMap.set(ch.chapter_number, []);
+          }
+          episodeMap.get(ch.chapter_number).push({
+            server_name: ch.server_name || 'Servidor',
+            embed_url: ch.embed_url
+          });
+        });
+
+        // Insertar episodios
+        let insertedCount = 0;
+        for (const [numero, links] of episodeMap) {
+          await db.insertEpisode({
+            anime_id: animeId,
+            numero: numero,
+            links: links
+          });
+          insertedCount++;
+        }
+
+        status.innerHTML = `
+          <div class="alert alert-success">
+            ✅ ¡Importación completada!<br><br>
+            <strong>${parsedData.title}</strong><br>
+            📊 ${insertedCount} episodios importados<br>
+            🎌 Anime ID: ${animeId}
+          </div>
+        `;
+
+        document.getElementById('jsonInput').value = '';
+        parsedData = null;
+        document.getElementById('preview').innerHTML = '';
+        importBtn.disabled = true;
+
+      } catch (err) {
+        status.innerHTML = `<div class="alert alert-error">❌ Error: ${err.message}</div>`;
+        importBtn.disabled = false;
+      }
+    }
+
+    function clearInput() {
+      document.getElementById('jsonInput').value = '';
+      document.getElementById('preview').innerHTML = '';
+      document.getElementById('status').innerHTML = '';
+      document.getElementById('importBtn').disabled = true;
+      parsedData = null;
+    }
+
+    document.getElementById('bulkImportForm').addEventListener('submit', importAnime);
+  </script>
+</body>
+</html>
+

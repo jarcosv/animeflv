@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnimeFLV - Importador Masivo</title>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #fff;
+    }
+
+    .section {
+      background: #2a2a2a;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 4px solid #ff6b6b;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+      color: #fff;
+      font-size: 1.2em;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #b0b0b0;
+      font-weight: 500;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      resize: vertical;
+      min-height: 200px;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #ff6b6b;
+      box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.1);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    button.primary {
+      background: #ff6b6b;
+      color: #fff;
+    }
+
+    button.primary:hover:not(:disabled) {
+      background: #ff5252;
+      transform: translateY(-2px);
+    }
+
+    button.primary:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button.secondary {
+      background: #444;
+      color: #e0e0e0;
+    }
+
+    button.secondary:hover {
+      background: #555;
+    }
+
+    .message {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .message.success {
+      background: rgba(76, 175, 80, 0.1);
+      color: #4caf50;
+      border: 1px solid #4caf50;
+      display: block;
+    }
+
+    .message.error {
+      background: rgba(255, 107, 107, 0.1);
+      color: #ff6b6b;
+      border: 1px solid #ff6b6b;
+      display: block;
+    }
+
+    .message.loading {
+      background: rgba(33, 150, 243, 0.1);
+      color: #2196f3;
+      border: 1px solid #2196f3;
+      display: block;
+    }
+
+    .preview {
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .preview-row {
+      padding: 8px;
+      border-bottom: 1px solid #444;
+      font-size: 13px;
+    }
+
+    .preview-row:last-child {
+      border-bottom: none;
+    }
+
+    .preview-anime {
+      color: #4caf50;
+      font-weight: 600;
+    }
+
+    .preview-episode {
+      color: #2196f3;
+      margin-left: 15px;
+    }
+
+    .help-text {
+      color: #999;
+      font-size: 12px;
+      margin-top: 5px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎌 AnimeFLV - Importador Masivo</h1>
+
+    <div class="section">
+      <h2>Importar Episodios desde JSON</h2>
+      
+      <label for="import-input">Pega títulos y paquetes JSON</label>
+      <textarea 
+        id="import-input"
+        placeholder='Título del anime
+        
+{
+  "chapters": [
+    {
+      "chapter_number": 1,
+      "server_name": "Principal",
+      "embed_url": "https://ejemplo.com/embed/1",
+      "cover_image": "https://ejemplo.com/cover.jpg"
+    }
+  ]
+}'
+      ></textarea>
+
+      <div class="help-text">
+        ✓ Detecta automáticamente portada del anime e imágenes de episodios<br>
+        ✓ Si el anime no existe, lo crea automáticamente<br>
+        ✓ Si el episodio existe, actualiza sus servidores<br>
+        ✓ Soporta múltiples animes en un mismo paquete
+      </div>
+
+      <div class="button-group">
+        <button class="secondary" id="btn-analyze">Analizar</button>
+        <button class="primary" id="btn-import" disabled>Importar</button>
+        <button class="secondary" id="btn-clear">Limpiar</button>
+      </div>
+
+      <div id="preview" class="preview" style="display: none;"></div>
+      <div id="message" class="message"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      importarMasivo,
+      parseBulkChapterImport
+    } from './importador.js';
+
+    const inputElement = document.getElementById('import-input');
+    const previewElement = document.getElementById('preview');
+    const messageElement = document.getElementById('message');
+    const btnAnalyze = document.getElementById('btn-analyze');
+    const btnImport = document.getElementById('btn-import');
+    const btnClear = document.getElementById('btn-clear');
+
+    function showMessage(text, type = 'info') {
+      messageElement.textContent = text;
+      messageElement.className = `message ${type}`;
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function clearMessage() {
+      messageElement.className = 'message';
+      messageElement.textContent = '';
+    }
+
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    btnAnalyze.addEventListener('click', () => {
+      const rawText = inputElement.value.trim();
+      
+      if (!rawText) {
+        showMessage('⚠️ Pega contenido primero', 'error');
+        return;
+      }
+
+      clearMessage();
+      previewElement.style.display = 'none';
+
+      const rows = parseBulkChapterImport(rawText);
+
+      if (rows.length === 0) {
+        showMessage('❌ No se encontraron episodios válidos', 'error');
+        return;
+      }
+
+      // Agrupar por anime
+      const grouped = {};
+      rows.forEach(row => {
+        if (!grouped[row.animeTitle]) {
+          grouped[row.animeTitle] = [];
+        }
+        grouped[row.animeTitle].push(row);
+      });
+
+      // Mostrar preview
+      let html = '';
+      let totalEpisodes = 0;
+
+      for (const [animeTitle, episodes] of Object.entries(grouped)) {
+        html += `<div class="preview-row"><span class="preview-anime">📺 ${escapeHTML(animeTitle)}</span>`;
+        html += ` (${episodes.length} eps)</div>`;
+
+        episodes.slice(0, 5).forEach(ep => {
+          html += `<div class="preview-row preview-episode">
+            Ep ${ep.chapterNumber} - ${ep.serverName}
+          </div>`;
+        });
+
+        if (episodes.length > 5) {
+          html += `<div class="preview-row preview-episode">... y ${episodes.length - 5} más</div>`;
+        }
+
+        totalEpisodes += episodes.length;
+      }
+
+      previewElement.innerHTML = html;
+      previewElement.style.display = 'block';
+
+      showMessage(`✓ Encontrados ${Object.keys(grouped).length} animes, ${totalEpisodes} episodios`, 'success');
+
+      btnImport.disabled = false;
+    });
+
+    btnImport.addEventListener('click', async () => {
+      const rawText = inputElement.value.trim();
+
+      if (!rawText) {
+        showMessage('⚠️ Nada que importar', 'error');
+        return;
+      }
+
+      btnImport.disabled = true;
+      showMessage('⏳ Importando...', 'loading');
+
+      try {
+        const result = await importarMasivo(rawText);
+
+        if (result.success) {
+          showMessage(`✅ Importación completada: ${result.imported} episodios`, 'success');
+          inputElement.value = '';
+          previewElement.style.display = 'none';
+          btnImport.disabled = true;
+        } else {
+          showMessage(`❌ Error: ${result.error}`, 'error');
+          btnImport.disabled = false;
+        }
+      } catch (error) {
+        showMessage(`❌ Error: ${error.message}`, 'error');
+        btnImport.disabled = false;
+      }
+    });
+
+    btnClear.addEventListener('click', () => {
+      inputElement.value = '';
+      previewElement.style.display = 'none';
+      clearMessage();
+      btnImport.disabled = true;
+    });
+  </script>
+</body>
+</html>
