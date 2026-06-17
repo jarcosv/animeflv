@@ -217,31 +217,44 @@ function parseBulkChapterImport(rawText) {
 
       try {
         const packageData = JSON.parse(jsonStr);
-        const chapters = packageData.chapters || [];
         
-        if (chapters.length > 0) {
-          let animeTitle = '';
+        // Detectar formato bulk_package
+        if (packageData.import_type === 'bulk_package' || packageData.chapters) {
+          const chapters = packageData.chapters || [];
           
-          // Buscar el título en el JSON
-          if (packageData.title) animeTitle = packageData.title;
-          else if (packageData.anime) animeTitle = packageData.anime;
-          else if (packageData.animeTitle) animeTitle = packageData.animeTitle;
-          else animeTitle = getTitleBeforeJson(text.substring(0, cursor));
+          if (chapters.length > 0) {
+            let animeTitle = '';
+            let animeCover = '';
+            
+            // Obtener título del anime
+            if (packageData.anime_title) animeTitle = packageData.anime_title;
+            else if (packageData.title) animeTitle = packageData.title;
+            else if (packageData.anime) animeTitle = packageData.anime;
+            else if (packageData.animeTitle) animeTitle = packageData.animeTitle;
+            else animeTitle = getTitleBeforeJson(text.substring(0, cursor));
 
-          for (const chapter of chapters) {
-            const chapterNum = chapter.chapter_number || chapter.numero || 0;
-            const serverName = chapter.server_name || chapter.servidor || 'Principal';
-            const embedUrl = chapter.embed_url || chapter.url || '';
-            const coverImage = pickImageFromValue(chapter);
+            // Obtener portada del anime
+            if (packageData.anime_cover) animeCover = packageData.anime_cover;
+            else if (packageData.image_url) animeCover = packageData.image_url;
+            else if (packageData.cover) animeCover = packageData.cover;
+            else if (packageData.poster) animeCover = packageData.poster;
 
-            if (embedUrl) {
-              rows.push({
-                animeTitle: animeTitle.trim(),
-                chapterNumber: chapterNum,
-                serverName,
-                embedUrl,
-                coverImage
-              });
+            for (const chapter of chapters) {
+              const chapterNum = chapter.chapter_number || chapter.numero || 0;
+              const serverName = chapter.server_name || chapter.servidor || 'Principal';
+              const embedUrl = chapter.embed_url || chapter.url || '';
+              const coverImage = chapter.cover_image || pickImageFromValue(chapter) || '';
+
+              if (embedUrl) {
+                rows.push({
+                  animeTitle: animeTitle.trim(),
+                  chapterNumber: chapterNum,
+                  serverName,
+                  embedUrl,
+                  coverImage,
+                  animeCover: animeCover
+                });
+              }
             }
           }
         }
@@ -382,24 +395,33 @@ async function importarMasivo(rawText) {
     for (const [animeTitle, episodes] of Object.entries(animeGroups)) {
       console.log(`Procesando: ${animeTitle} (${episodes.length} episodios)`);
 
-      // Crear o obtener anime
-      const coverImage = episodes[0].coverImage || '';
+      // Usar anime_cover del paquete JSON
+      const coverImage = episodes[0].animeCover || episodes[0].coverImage || '';
       let anime = await findOrCreateAnime(animes, animeTitle, coverImage);
 
-        if (!anime || !anime.id) {
-          console.warn(`No se pudo crear anime: ${animeTitle}`);
-          continue;
-        }
+      if (!anime || !anime.id) {
+        console.warn(`No se pudo crear anime: ${animeTitle}`);
+        continue;
+      }
 
-        // Guardar episodios
-        for (const ep of episodes) {
-          const success = await saveEpisodio(
-            anime.id,
-            ep.chapterNumber,
-            `Episodio ${ep.chapterNumber}`,
-            ep.serverName,
-            ep.embedUrl,
-            ep.coverImage
+      // Guardar episodios
+      for (const ep of episodes) {
+        const success = await saveEpisodio(
+          anime.id,
+          ep.chapterNumber,
+          `Episodio ${ep.chapterNumber}`,
+          ep.serverName,
+          ep.embedUrl,
+          ep.coverImage
+        );
+
+        if (success) {
+          totalImported++;
+        }
+      }
+    }
+
+    console.log(`✓ Importación completada: ${totalImported} episodios`);
     return { success: true, imported: totalImported };
 
   } catch (error) {

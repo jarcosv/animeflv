@@ -187,25 +187,28 @@
       <label for="import-input">Pega títulos y paquetes JSON</label>
       <textarea 
         id="import-input"
-        placeholder='Título del anime
-        
-{
+        placeholder='{
+  "import_type": "bulk_package",
+  "anime_title": "Re:Zero Temporada 4",
+  "anime_cover": "https://...",
+  "image_url": "https://...",
   "chapters": [
     {
       "chapter_number": 1,
-      "server_name": "Principal",
-      "embed_url": "https://ejemplo.com/embed/1",
-      "cover_image": "https://ejemplo.com/cover.jpg"
+      "server_name": "OK",
+      "embed_url": "https://ok.ru/...",
+      "cover_image": "https://..."
     }
   ]
 }'
       ></textarea>
 
       <div class="help-text">
-        ✓ Detecta automáticamente portada del anime e imágenes de episodios<br>
-        ✓ Si el anime no existe, lo crea automáticamente<br>
-        ✓ Si el episodio existe, actualiza sus servidores<br>
-        ✓ Soporta múltiples animes en un mismo paquete
+        ✓ Soporta formato "import_type": "bulk_package"<br>
+        ✓ Lee "anime_title", "anime_cover" e "image_url"<br>
+        ✓ Detecta automáticamente portadas de episodios<br>
+        ✓ Fusiona múltiples servidores por episodio<br>
+        ✓ Si el anime existe, actualiza sus episodios
       </div>
 
       <div class="button-group">
@@ -271,30 +274,37 @@
       const grouped = {};
       rows.forEach(row => {
         if (!grouped[row.animeTitle]) {
-          grouped[row.animeTitle] = [];
+          grouped[row.animeTitle] = {
+            episodes: [],
+            coverImage: row.animeCover || row.coverImage
+          };
         }
-        grouped[row.animeTitle].push(row);
+        grouped[row.animeTitle].episodes.push(row);
       });
 
       // Mostrar preview
       let html = '';
       let totalEpisodes = 0;
 
-      for (const [animeTitle, episodes] of Object.entries(grouped)) {
+      for (const [animeTitle, data] of Object.entries(grouped)) {
         html += `<div class="preview-row"><span class="preview-anime">📺 ${escapeHTML(animeTitle)}</span>`;
-        html += ` (${episodes.length} eps)</div>`;
+        html += ` (${data.episodes.length} eps)`;
+        if (data.coverImage) {
+          html += ` - 🖼️ Portada detectada`;
+        }
+        html += `</div>`;
 
-        episodes.slice(0, 5).forEach(ep => {
+        data.episodes.slice(0, 5).forEach(ep => {
           html += `<div class="preview-row preview-episode">
             Ep ${ep.chapterNumber} - ${ep.serverName}
           </div>`;
         });
 
-        if (episodes.length > 5) {
-          html += `<div class="preview-row preview-episode">... y ${episodes.length - 5} más</div>`;
+        if (data.episodes.length > 5) {
+          html += `<div class="preview-row preview-episode">... y ${data.episodes.length - 5} más</div>`;
         }
 
-        totalEpisodes += episodes.length;
+        totalEpisodes += data.episodes.length;
       }
 
       previewElement.innerHTML = html;
