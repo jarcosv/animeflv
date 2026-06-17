@@ -2,10 +2,10 @@
   "buildCommand": "echo 'Static site'",
   "outputDirectory": ".",
   "cleanUrls": true,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/ver/:path*",
-      "destination": "/ver.html"
+      "src": "/ver/(.*)",
+      "dest": "/ver.html"
     }
   ]
 }
