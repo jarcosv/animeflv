@@ -1,5 +1,11 @@
 {
   "buildCommand": "echo 'Static site'",
   "outputDirectory": ".",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/ver/:path*",
+      "destination": "/ver.html"
+    }
+  ]
 }
