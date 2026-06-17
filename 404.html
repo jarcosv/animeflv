@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirigiendo...</title>
+</head>
+<body>
+  <script>
+    // Si la URL es /ver/algo, redirigir a ver.html
+    const path = window.location.pathname;
+    if (path.startsWith('/ver/')) {
+      // Redirigir a ver.html preservando la ruta
+      window.location.href = '/ver.html' + window.location.search;
+    } else {
+      // Para otros 404, ir al home
+      window.location.href = '/';
+    }
+  </script>
+</body>
+</html>
