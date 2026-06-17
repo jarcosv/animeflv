@@ -1,0 +1,78 @@
+---
+import AnimeCard from './AnimeCard.astro';
+
+interface Props {
+  animes: Array<{
+    title: string;
+    cover?: string;
+    type?: string;
+    rating?: number;
+    ranking?: number;
+  }>;
+  columns?: number;
+}
+
+const { animes, columns = 'auto-fill' } = Astro.props;
+---
+
+<div class="anime-grid">
+  {animes.map((anime) => (
+    <div class="grid-item">
+      {anime.ranking && (
+        <div class="ranking-badge">{anime.ranking}</div>
+      )}
+      <AnimeCard 
+        title={anime.title}
+        cover={anime.cover}
+        type={anime.type}
+        rating={anime.rating}
+      />
+    </div>
+  ))}
+</div>
+
+<style>
+  .anime-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    width: 100%;
+  }
+
+  .grid-item {
+    position: relative;
+  }
+
+  .ranking-badge {
+    position: absolute;
+    bottom: 44px;
+    left: 8px;
+    background-color: #e63946;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    z-index: 10;
+  }
+
+  @media (max-width: 1024px) {
+    .anime-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .anime-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .anime-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+  }
+</style>

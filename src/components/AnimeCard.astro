@@ -1,0 +1,130 @@
+---
+interface Props {
+  title: string;
+  cover?: string;
+  type?: string;
+  rating?: number;
+}
+
+const { title, cover, type = 'TV', rating = 0 } = Astro.props;
+---
+
+<div class="anime-card">
+  <div class="card-image-container">
+    {cover ? (
+      <img src={cover} alt={title} class="card-image" />
+    ) : (
+      <div class="card-placeholder">
+        <span class="play-icon">▶</span>
+      </div>
+    )}
+    
+    <div class="badge badge-type">{type}</div>
+    
+    {rating > 0 && (
+      <div class="badge badge-rating">
+        <span class="star">★</span> {rating.toFixed(1)}
+      </div>
+    )}
+  </div>
+
+  <div class="card-title">{title}</div>
+</div>
+
+<style>
+  .anime-card {
+    width: 100%;
+    background-color: #1c1c1c;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .anime-card:hover {
+    transform: scale(1.04);
+    border-color: #e63946;
+  }
+
+  .card-image-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background-color: #1a1a1a;
+    overflow: hidden;
+  }
+
+  .card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .play-icon {
+    font-size: 36px;
+    color: #333333;
+  }
+
+  .badge {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .badge-type {
+    top: 8px;
+    left: 8px;
+    background-color: #e63946;
+  }
+
+  .badge-rating {
+    top: 8px;
+    right: 8px;
+    background-color: #000000aa;
+  }
+
+  .star {
+    color: #e63946;
+  }
+
+  .card-title {
+    padding: 8px;
+    font-size: 12px;
+    color: #ffffff;
+    font-weight: 500;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 32px;
+  }
+
+  @media (max-width: 480px) {
+    .card-title {
+      font-size: 11px;
+    }
+
+    .badge {
+      font-size: 9px;
+      padding: 3px 6px;
+    }
+  }
+</style>

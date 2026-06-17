@@ -1,0 +1,263 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import Navbar from '../../components/Navbar.astro';
+import AnimeCard from '../../components/AnimeCard.astro';
+import Footer from '../../components/Footer.astro';
+
+export async function getStaticPaths() {
+  const genres = [
+    { slug: 'accion', name: 'Acción' },
+    { slug: 'aventura', name: 'Aventura' },
+    { slug: 'comedia', name: 'Comedia' },
+    { slug: 'drama', name: 'Drama' },
+    { slug: 'fantasia', name: 'Fantasía' },
+    { slug: 'romance', name: 'Romance' },
+    { slug: 'slice-of-life', name: 'Slice of Life' },
+    { slug: 'sobrenatural', name: 'Sobrenatural' }
+  ];
+
+  return genres.map(genre => ({
+    params: { genero: genre.slug },
+    props: { name: genre.name, slug: genre.slug }
+  }));
+}
+
+interface Props {
+  name: string;
+  slug: string;
+}
+
+interface Anime {
+  mal_id: number;
+  title: string;
+  images?: {
+    jpg?: {
+      image_url?: string;
+    };
+  };
+  score?: number;
+  type?: string;
+}
+
+const { name, slug } = Astro.props;
+
+let genreAnimes: Array<{title: string; cover?: string; type: string; rating: number}> = [];
+
+// Map genres to Jikan IDs
+const genreMap: Record<string, number> = {
+  'accion': 1,
+  'aventura': 2,
+  'comedia': 4,
+  'drama': 8,
+  'fantasia': 10,
+  'romance': 22,
+  'slice-of-life': 36,
+  'sobrenatural': 37
+};
+
+// Fetch anime by genre
+try {
+  const genreId = genreMap[slug] || 1;
+  const response = await fetch(`https://api.jikan.moe/v4/genres/anime/${genreId}/manga?limit=48`);
+  
+  if (response.ok) {
+    const data = await response.json();
+    const animes = data.data || [];
+    
+    genreAnimes = animes.slice(0, 48).map((anime: Anime) => ({
+      title: anime.title || 'Sin título',
+      cover: anime.images?.jpg?.image_url,
+      type: anime.type || 'TV',
+      rating: anime.score || 0
+    }));
+  }
+} catch (error) {
+  console.error('Error fetching genre animes:', error);
+}
+
+// If API fails, try alternative endpoint
+if (genreAnimes.length === 0) {
+  try {
+    const response = await fetch('https://api.jikan.moe/v4/top/anime?limit=48');
+    if (response.ok) {
+      const data = await response.json();
+      const animes = data.data || [];
+      
+      genreAnimes = animes.map((anime: Anime) => ({
+        title: anime.title || 'Sin título',
+        cover: anime.images?.jpg?.image_url,
+        type: anime.type || 'TV',
+        rating: anime.score || 0
+      }));
+    }
+  } catch (error) {
+    console.error('Error fetching fallback animes:', error);
+  }
+}
+
+// Generate placeholder data if both APIs fail
+const placeholders = Array(48).fill(null).map(() => ({
+  title: 'Cargando...',
+  type: 'TV',
+  rating: 0
+}));
+
+const displayAnimes = genreAnimes.length > 0 ? genreAnimes : placeholders;
+---
+
+<MainLayout title={`Género ${name} - AnimeFLV`}>
+  <Navbar />
+  
+  <main class="main-content">
+    <section class="container page-header">
+      <h1>Anime de {name}</h1>
+      <p>Los mejores animes del género {name}</p>
+    </section>
+
+    <section class="container">
+      <div class="anime-grid-large">
+        {displayAnimes.map((anime) => (
+          <AnimeCard 
+            title={anime.title}
+            cover={anime.cover}
+            type={anime.type}
+            rating={anime.rating}
+          />
+        ))}
+      </div>
+    </section>
+
+    <section class="seo-block">
+      <div class="container">
+        <div class="seo-content">
+          <h2>Anime de {name}</h2>
+          <p>
+            Explora nuestra colección completa de animes del género {name}. Desde obras clásicas hasta los estrenos más recientes, encontrarás todo lo que buscas en esta categoría. Cada serie ha sido cuidadosamente seleccionada por su calidad y popularidad.
+          </p>
+          <p>
+            Disfruta viendo los mejores animes de {name} en alta definición con subtítulos en español y opciones de doblaje. Todos nuestros contenidos son completamente gratuitos y accesibles desde cualquier dispositivo.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</MainLayout>
+
+<style>
+  .main-content {
+    background-color: #0d0d0d;
+    padding: 24px 0;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  .page-header {
+    text-align: center;
+    padding: 40px 40px 24px;
+    border-bottom: 1px solid #1f1f1f;
+    margin-bottom: 40px;
+  }
+
+  .page-header h1 {
+    font-size: 32px;
+    color: #ffffff;
+    margin-bottom: 8px;
+  }
+
+  .page-header p {
+    color: #aaaaaa;
+    font-size: 14px;
+  }
+
+  .anime-grid-large {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 48px;
+  }
+
+  .seo-block {
+    background-color: #111111;
+    padding: 30px 40px;
+    border-top: 1px solid #1f1f1f;
+    border-bottom: 1px solid #1f1f1f;
+  }
+
+  .seo-content {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .seo-content h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 16px;
+    padding-left: 12px;
+    border-left: 3px solid #e63946;
+  }
+
+  .seo-content p {
+    color: #777777;
+    font-size: 13px;
+    line-height: 1.8;
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 0 24px;
+    }
+
+    .page-header {
+      padding: 32px 24px 20px;
+    }
+
+    .page-header h1 {
+      font-size: 24px;
+    }
+
+    .anime-grid-large {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .seo-block {
+      padding: 24px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .container {
+      padding: 0 16px;
+    }
+
+    .page-header {
+      padding: 24px 16px 16px;
+    }
+
+    .page-header h1 {
+      font-size: 18px;
+    }
+
+    .anime-grid-large {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .seo-block {
+      padding: 20px 16px;
+    }
+
+    .seo-content p {
+      font-size: 11px;
+    }
+  }
+</style>

@@ -1,0 +1,274 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import HeroSection from '../components/HeroSection.astro';
+import EpisodeCard from '../components/EpisodeCard.astro';
+import AnimeCard from '../components/AnimeCard.astro';
+import Footer from '../components/Footer.astro';
+
+interface Episode {
+  entry?: {
+    mal_id?: number;
+    title?: string;
+    images?: {
+      jpg?: {
+        image_url?: string;
+      };
+    };
+  };
+  aired?: string;
+}
+
+interface Anime {
+  mal_id: number;
+  title: string;
+  images?: {
+    jpg?: {
+      image_url?: string;
+    };
+  };
+  score?: number;
+  type?: string;
+}
+
+let latestEpisodes: Array<{title: string; cover?: string; episode: number; genre: string}> = [];
+let topAnimes: Array<{title: string; cover?: string; type: string; rating: number}> = [];
+
+// Fetch latest episodes
+try {
+  const episodesResponse = await fetch('https://api.jikan.moe/v4/watch/episodes');
+  if (episodesResponse.ok) {
+    const episodesData = await episodesResponse.json();
+    const episodes = episodesData.data || [];
+    
+    latestEpisodes = episodes.slice(0, 12).map((ep: Episode, index: number) => ({
+      title: ep.entry?.title || `Episodio ${index + 1}`,
+      cover: ep.entry?.images?.jpg?.image_url,
+      episode: index + 1,
+      genre: 'Anime'
+    }));
+  }
+} catch (error) {
+  console.error('Error fetching episodes:', error);
+}
+
+// Fetch top animes
+try {
+  const topResponse = await fetch('https://api.jikan.moe/v4/top/anime?limit=12');
+  if (topResponse.ok) {
+    const topData = await topResponse.json();
+    const animes = topData.data || [];
+    
+    topAnimes = animes.slice(0, 12).map((anime: Anime) => ({
+      title: anime.title || 'Sin título',
+      cover: anime.images?.jpg?.image_url,
+      type: anime.type || 'TV',
+      rating: anime.score || 0
+    }));
+  }
+} catch (error) {
+  console.error('Error fetching top animes:', error);
+}
+
+// Generate placeholder data if APIs fail
+const placeholderEpisodes = Array(12).fill(null).map((_, i) => ({
+  title: 'Cargando...',
+  episode: i + 1,
+  genre: 'Anime'
+}));
+
+const placeholderAnimes = Array(12).fill(null).map(() => ({
+  title: 'Cargando...',
+  type: 'TV',
+  rating: 0
+}));
+
+// Use fetched data or placeholders
+const displayEpisodes = latestEpisodes.length > 0 ? latestEpisodes : placeholderEpisodes;
+const displayTop = topAnimes.length > 0 ? topAnimes : placeholderAnimes;
+---
+
+<MainLayout title="AnimeFLV - Ver Anime Online Gratis">
+  <Navbar />
+  <HeroSection />
+
+  <main class="main-content">
+    <!-- Últimos capítulos Section -->
+    <section class="container">
+      <h2 class="section-title">Últimos capítulos</h2>
+      <div class="episodes-row scroll-hide">
+        {displayEpisodes.map((episode) => (
+          <EpisodeCard 
+            title={episode.title}
+            cover={episode.cover}
+            episode={episode.episode}
+            genre={episode.genre}
+          />
+        ))}
+      </div>
+      <div class="view-all">
+        <a href="/en-emision">Ver más →</a>
+      </div>
+    </section>
+
+    <!-- Animes Top Section -->
+    <section class="container">
+      <h2 class="section-title">Top Animes</h2>
+      <div class="anime-grid">
+        {displayTop.map((anime) => (
+          <AnimeCard 
+            title={anime.title}
+            cover={anime.cover}
+            type={anime.type}
+            rating={anime.rating}
+          />
+        ))}
+      </div>
+      <div class="view-all">
+        <a href="/directorio">Ver más →</a>
+      </div>
+    </section>
+
+    <!-- SEO Section -->
+    <section class="seo-block">
+      <div class="container">
+        <div class="seo-content">
+          <p>
+            AnimeFLV es el mejor sitio para disfrutar del anime online completamente gratis y en alta definición. Contamos con una amplia catalogación de series y películas, tanto con subtítulos en español como con doblaje al castellano. Navega por nuestro directorio de géneros y encuentra tu anime favorito de manera fácil y rápida.
+          </p>
+          <p>
+            Nos dedicamos a traerte lo mejor del contenido anime, desde las series más recientes que se están transmitiendo actualmente, hasta los clásicos que marcaron época. Nuestro reproductor de video es compatible con múltiples dispositivos y ofrece una experiencia de visualización sin interrupciones. Disfruta de tu anime favorito sin publicidades invasivas y sin necesidad de registrarte.
+          </p>
+          <p>
+            En AnimeFLV puedes explorar diferentes géneros como acción, aventura, romance, comedia, drama, fantasía y muchos más. Cada serie incluye información detallada, calificaciones de la comunidad y listados de capítulos. Además, ofrecemos la opción de ver películas completas, especiales y OVAs exclusivas. ¡Únete a nuestra comunidad de amantes del anime!
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</MainLayout>
+
+<style>
+  .main-content {
+    background-color: #0d0d0d;
+    padding: 24px 0;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  .episodes-row {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+
+  .anime-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .view-all {
+    text-align: right;
+    margin-bottom: 48px;
+  }
+
+  .view-all a {
+    color: #e63946;
+    font-size: 13px;
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .view-all a:hover {
+    color: #ff4757;
+  }
+
+  .seo-block {
+    background-color: #111111;
+    padding: 30px 40px;
+    margin-top: 48px;
+    border-top: 1px solid #1f1f1f;
+    border-bottom: 1px solid #1f1f1f;
+  }
+
+  .seo-content {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .seo-content p {
+    color: #777777;
+    font-size: 13px;
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+
+  .seo-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 1024px) {
+    .anime-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 0 24px;
+    }
+
+    .episodes-row {
+      gap: 10px;
+    }
+
+    .anime-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .seo-block {
+      padding: 24px 24px;
+    }
+
+    .seo-content p {
+      font-size: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .container {
+      padding: 0 16px;
+    }
+
+    .episodes-row {
+      gap: 8px;
+    }
+
+    .anime-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .seo-block {
+      padding: 20px 16px;
+    }
+
+    .seo-content p {
+      font-size: 11px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+  }
+</style>

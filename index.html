@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AnimeFLV - Tu fuente de anime online gratis en HD">
+  <title>AnimeFLV - Ver Anime Online Gratis</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #2a2a2a; }
+::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 4px; }
+
+.navbar { background: #242424; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; padding: 12px 30px; }
+.navbar-container { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+.navbar-logo img { height: 40px; }
+.navbar-links { display: flex; gap: 30px; flex: 1; justify-content: flex-end; }
+.nav-link { color: #aaa; font-size: 13px; font-weight: 500; text-decoration: none; background: 0; border: 0; cursor: pointer; transition: color 0.2s; }
+.nav-link:hover, .nav-link.active { color: #0ea5e9; }
+.navbar-search { display: flex; position: relative; align-items: center; margin-left: auto; }
+.search-input { background: #1f1f1f; color: #fff; border: 1px solid #333; height: 32px; padding: 0 12px 0 36px; border-radius: 20px; font-size: 12px; width: 150px; }
+.search-input:focus { outline: 0; border-color: #0ea5e9; }
+.search-button { position: absolute; left: 10px; background: 0; color: #0ea5e9; border: 0; cursor: pointer; font-size: 14px; padding: 0; }
+.login-btn { color: #fff; font-size: 12px; font-weight: 600; background: linear-gradient(135deg, #0ea5e9, #06b6d4); border: 0; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+
+.hero { background: linear-gradient(135deg, rgba(42, 42, 42, 0.8) 0%, rgba(31, 31, 31, 0.8) 100%), url('/bane.jpg'); background-size: cover; background-position: center; padding: 10px 20px; border-bottom: 1px solid #333; text-align: center; max-width: 1100px; margin: 20px auto 0; border-radius: 12px; }
+.hero-title { font-size: 24px; font-weight: 400; border-radius: 8px; padding: 1px 1px; display: inline-block; }
+.hero-subtitle { font-size: 14px; color: #aaa; margin-top: 4px; }
+
+.main-wrapper { display: grid; grid-template-columns: 250px 1fr; gap: 20px; max-width: 1150px; margin:auto; padding: 20px 30px; }
+.sidebar { background: #242424; border-radius: 4px; overflow: hidden; height: fit-content; position: sticky; top: 80px; }
+.sidebar-title { background: #1a1a1a; color: #0ea5e9; padding: 12px 16px; font-size: 12px; font-weight: 700; border-bottom: 2px solid #0ea5e9; display: flex; align-items: center; gap: 8px; }
+.sidebar-list { list-style: 0; max-height: 400px; overflow-y: auto; }
+.sidebar-item { border-bottom: 1px solid #2a2a2a; }
+.sidebar-link { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; color: #aaa; text-decoration: 0; font-size: 12px; transition: all 0.2s; }
+.sidebar-link:hover { background: #2a2a2a; color: #0ea5e9; padding-left: 18px; }
+.sidebar-badge { background: #0ea5e9; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 12px; font-weight: 600; }
+
+.main-content { display: flex; flex-direction: column; gap: 30px; }
+.section { background: #242424; border-radius: 4px; overflow: hidden; }
+.section-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: #1a1a1a; border-bottom: 1px solid #2a2a2a; }
+.section-title { color: #0ea5e9; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.section-title::before { content: '▶'; font-size: 10px; }
+.view-all { color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; background: #0ea5e9; padding: 4px 12px; border-radius: 4px; border: 0; }
+.view-all:hover { background: #06b6d4; }
+
+.episodes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; padding: 16px; }
+.episode-card { background: #1a1a1a; border-radius: 4px; overflow: hidden; cursor: pointer; transition: transform 0.2s; position: relative; }
+.episode-card:hover { transform: translateY(-4px); }
+.episode-image { position: relative; width: 100%; aspect-ratio: 16/9; background: #0f0f0f; overflow: hidden; }
+.episode-image img { width: 100%; height: 100%; object-fit: cover; }
+.episode-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%); color: #333; font-size: 32px; }
+.play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0); transition: background-color 0.2s; }
+.episode-card:hover .play-overlay { background: rgba(0,0,0,0.4); }
+.play-button { width: 48px; height: 48px; background: rgba(14,165,233,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; opacity: 0; transition: opacity 0.2s; }
+.episode-card:hover .play-button { opacity: 1; }
+.episode-badge { position: absolute; top: 8px; left: 8px; background: #ff9500; color: #fff; padding: 4px 8px; font-size: 10px; font-weight: 700; border-radius: 3px; }
+.episode-info { padding: 12px; }
+.episode-title { color: #fff; font-size: 12px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.anime-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; padding: 16px; }
+.anime-card { background: #1a1a1a; border-radius: 4px; overflow: hidden; cursor: pointer; transition: transform 0.2s; position: relative; }
+.anime-card:hover { transform: translateY(-4px); }
+.anime-image { position: relative; width: 100%; aspect-ratio: 3/4; background: #0f0f0f; overflow: hidden; }
+.anime-image img { width: 100%; height: 100%; object-fit: cover; }
+.anime-badge { position: absolute; top: 8px; left: 8px; background: #0ea5e9; color: #fff; padding: 4px 8px; font-size: 9px; font-weight: 700; border-radius: 3px; }
+.anime-title { padding: 10px; color: #fff; font-size: 11px; font-weight: 500; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: center; }
+
+.loading { grid-column: 1 / -1; text-align: center; padding: 40px; color: #666; }
+.footer { background: #1a1a1a; border-top: 1px solid #2a2a2a; padding: 30px 20px; margin-top: 40px; text-align: center; color: #666; font-size: 12px; }
+
+@media (max-width: 768px) {
+  .main-wrapper { grid-template-columns: 1fr; padding: 16px; }
+  .sidebar { display: none; }
+  .navbar-links { display: none; }
+}
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-logo">
+        <img src="/image.png" alt="AnimeFLV" style="height:40px;">
+      </div>
+      <div class="navbar-links" id="navbarLinks">
+        <a href="/" class="nav-link active">INICIO</a>
+        <a href="/directorio.html" class="nav-link">DIRECTORIO ANIME</a>
+      </div>
+      <div class="navbar-search">
+        <button class="search-button"><i class="fa-solid fa-search"></i></button>
+        <input type="text" class="search-input" placeholder="Buscar...">
+      </div>
+      <button class="login-btn">LOGIN</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="hero-title"><strong>AnimeFLV</strong> tu fuente de anime online gratis en HD</h1>
+  </section>
+
+  <!-- MAIN -->
+  <div class="main-wrapper">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-title">▶ ANIMES EN EMISIÓN</div>
+      <ul class="sidebar-list" id="sidebarList">
+        <li class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <span>Cargando...</span>
+            <span class="sidebar-badge">ANIME</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- CONTENT -->
+    <div class="main-content">
+      <!-- ÚLTIMOS EPISODIOS -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">Últimos episodios</h2>
+          <button class="view-all">HOY</button>
+        </div>
+        <div class="episodes-grid" id="episodesGrid">
+          <div class="loading">Cargando episodios...</div>
+        </div>
+      </div>
+
+      <!-- TOP ANIMES -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">Top Animes</h2>
+          <a href="/directorio.html" class="view-all">VER MÁS</a>
+        </div>
+        <div class="anime-grid" id="topAnimesGrid">
+          <div class="loading">Cargando animes...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div style="max-width: 1150px; margin: 0 auto;">
+      <p style="margin-bottom: 12px; color: #ccc;">Anime Online - Ningún vídeo se encuentra alojado en nuestros servidores.</p>
+      <div style="display: flex; gap: 20px; justify-content: center; font-size: 12px;">
+        <a href="#" style="color: #fff; text-decoration: none;">Términos y Condiciones</a>
+        <a href="#" style="color: #fff; text-decoration: none;">Política de Privacidad</a>
+        <a href="#" style="color: #fff; text-decoration: none;">Sobre AnimeFLV</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Load episodes
+    async function loadEpisodes() {
+      try {
+        const res = await fetch('https://api.jikan.moe/v4/watch/episodes');
+        const data = await res.json();
+        const episodes = data.data || [];
+        const grid = document.getElementById('episodesGrid');
+        
+        grid.innerHTML = episodes.slice(0, 12).map((ep, i) => `
+          <div class="episode-card">
+            <div class="episode-image">
+              ${ep.entry?.images?.jpg?.image_url ? `
+                <img src="${ep.entry.images.jpg.image_url}" alt="${ep.entry.title}">
+              ` : `
+                <div class="episode-placeholder">▶</div>
+              `}
+              <div class="play-overlay">
+                <div class="play-button">▶</div>
+              </div>
+              <div class="episode-badge">Episodio ${i + 1}</div>
+            </div>
+            <div class="episode-info">
+              <div class="episode-title">${ep.entry?.title || 'Episodio'}</div>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Load top animes
+    async function loadTopAnimes() {
+      try {
+        const res = await fetch('https://api.jikan.moe/v4/top/anime?limit=12');
+        const data = await res.json();
+        const animes = data.data || [];
+        const grid = document.getElementById('topAnimesGrid');
+        
+        grid.innerHTML = animes.map(anime => `
+          <div class="anime-card">
+            <div class="anime-image">
+              ${anime.images?.jpg?.image_url ? `
+                <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
+              ` : `
+                <div class="episode-placeholder">▶</div>
+              `}
+              <div class="anime-badge">${anime.type || 'TV'}</div>
+            </div>
+            <div class="anime-title">${anime.title}</div>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Load sidebar animes
+    async function loadSidebar() {
+      try {
+        const res = await fetch('https://api.jikan.moe/v4/seasons/now?limit=15');
+        const data = await res.json();
+        const animes = data.data || [];
+        const list = document.getElementById('sidebarList');
+        
+        list.innerHTML = animes.map(anime => `
+          <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+              <span>${anime.title}</span>
+              <span class="sidebar-badge">ANIME</span>
+            </a>
+          </li>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    loadEpisodes();
+    loadTopAnimes();
+    loadSidebar();
+  </script>
+</body>
+</html>
