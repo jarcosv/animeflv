@@ -75,12 +75,15 @@ async function supabaseRequest(path, options = {}) {
   const url = `${SUPABASE_URL}/rest/v1${path}`;
   
   try {
+    // Agregar header Prefer para POST y PATCH
+    const headers = { ...SUPABASE_HEADERS, ...options.headers };
+    if ((options.method === 'POST' || options.method === 'PATCH') && !headers['Prefer']) {
+      headers['Prefer'] = 'return=representation';
+    }
+
     const response = await fetch(url, {
       ...options,
-      headers: {
-        ...SUPABASE_HEADERS,
-        ...options.headers
-      }
+      headers
     });
 
     const text = await response.text();
