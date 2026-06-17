@@ -95,187 +95,170 @@ body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSys
 .chapter-servers-count { font-size: 11px; color: #888; margin-top: 2px; }
 .chapters-empty { padding: 20px 16px; text-align: center; color: #666; font-size: 12px; }
 @media (max-width: 900px) {
-.player-layout { grid-template-columns: 1fr; }
-.chapters-list { max-height: 320px; }
+  .player-layout { grid-template-columns: 1fr; }
+  .chapters-list { max-height: 320px; }
 }
 @media (max-width: 768px) {
-.player-controls { flex-direction: column; }
-.navbar-links { display: none; }
+  .player-controls { flex-direction: column; }
+  .navbar-links { display: none; }
 }
 </style>
 </head>
 <body>
+
 <!-- NAVBAR -->
 <nav class="navbar">
-<div class="navbar-container">
-<div class="navbar-logo">
-<a href="/"><img src="/image.png" alt="AnimeFLV" style="height:40px;"></a>
-</div>
-<div class="navbar-links" id="navbarLinks">
-<a href="/" class="nav-link">INICIO</a>
-<a href="/directorio.html" class="nav-link">DIRECTORIO ANIME</a>
-</div>
-<div class="navbar-search">
-<button class="search-button"><i class="fa-solid fa-search"></i></button>
-<input type="text" class="search-input" placeholder="Buscar...">
-</div>
-<button class="login-btn">LOGIN</button>
-</div>
+  <div class="navbar-container">
+    <div class="navbar-logo">
+      <a href="/"><img src="/image.png" alt="AnimeFLV" style="height:40px;"></a>
+    </div>
+    <div class="navbar-links" id="navbarLinks">
+      <a href="/" class="nav-link">INICIO</a>
+      <a href="/directorio.html" class="nav-link">DIRECTORIO ANIME</a>
+    </div>
+    <div class="navbar-search">
+      <button class="search-button"><i class="fa-solid fa-search"></i></button>
+      <input type="text" class="search-input" placeholder="Buscar...">
+    </div>
+    <button class="login-btn">LOGIN</button>
+  </div>
 </nav>
 
 <!-- MAIN CONTENT -->
 <div class="player-container">
-<!-- BREADCRUMB -->
-<div class="breadcrumb">
-<a href="/">Inicio</a> /
-<a href="#" id="animeLink">Anime</a> /
-<span id="episodeTitle">Episodio</span>
-</div>
+  <div class="breadcrumb">
+    <a href="/">Inicio</a> /
+    <a href="#" id="animeLink">Anime</a> /
+    <span id="episodeTitle">Episodio</span>
+  </div>
 
-<!-- TITULO Y SUBTÍTULO -->
-<div class="player-header">
-<h1 class="player-title" id="mainTitle">Cargando...</h1>
-<p class="player-subtitle" id="mainSubtitle">Episodio -</p>
-</div>
+  <div class="player-header">
+    <h1 class="player-title" id="mainTitle">Cargando...</h1>
+    <p class="player-subtitle" id="mainSubtitle">Episodio -</p>
+  </div>
 
-<!-- LAYOUT DE DOS COLUMNAS -->
-<div class="player-layout">
-<!-- ===== COLUMNA IZQUIERDA: PLAYER ===== -->
-<div class="player-main">
-<!-- TABS DE SERVIDORES -->
-<div class="servers-tabs" id="serversList">
-<span style="color:#666; font-size:12px; padding: 10px 0;">Cargando servidores...</span>
-</div>
+  <div class="player-layout">
+    <!-- COLUMNA IZQUIERDA -->
+    <div class="player-main">
+      <div class="servers-tabs" id="serversList">
+        <span style="color:#666; font-size:12px; padding: 10px 0;">Cargando servidores...</span>
+      </div>
 
-<!-- PLAYER -->
-<div class="player-wrapper" id="videoPlayer">
-<div class="player-placeholder">
-<i class="fas fa-play-circle"></i>
-<p>Selecciona un servidor para reproducir</p>
-</div>
-</div>
+      <div class="player-wrapper" id="videoPlayer">
+        <div class="player-placeholder">
+          <i class="fas fa-play-circle"></i>
+          <p>Selecciona un servidor para reproducir</p>
+        </div>
+      </div>
 
-<!-- CONTROLES Y BOTONES -->
-<div class="player-controls">
-<div class="nav-buttons">
-<button class="btn" id="prevBtn" onclick="navigateEpisode(-1)">← ANTERIOR</button>
-<button class="btn btn-secondary" id="homeBtn" onclick="goToAnime()">◉ FICHA DEL ANIME</button>
-<button class="btn" id="nextBtn" onclick="navigateEpisode(1)">SIGUIENTE →</button>
-</div>
-<div class="nav-buttons">
-<button class="btn btn-secondary" onclick="reportEpisode()" title="Reportar problemas"><i class="fas fa-flag"></i> REPORTAR</button>
-<button class="btn btn-secondary" onclick="downloadEpisode()"><i class="fas fa-download"></i> DESCARGAR</button>
-</div>
-</div>
+      <div class="player-controls">
+        <div class="nav-buttons">
+          <button class="btn" id="prevBtn" onclick="navigateEpisode(-1)">← ANTERIOR</button>
+          <button class="btn btn-secondary" id="homeBtn" onclick="goToAnime()">◉ FICHA DEL ANIME</button>
+          <button class="btn" id="nextBtn" onclick="navigateEpisode(1)">SIGUIENTE →</button>
+        </div>
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="reportEpisode()" title="Reportar problemas"><i class="fas fa-flag"></i> REPORTAR</button>
+          <button class="btn btn-secondary" onclick="downloadEpisode()"><i class="fas fa-download"></i> DESCARGAR</button>
+        </div>
+      </div>
 
-<!-- INFORMACIÓN -->
-<div class="section-box">
-<div class="info-content">
-<div>
-<div class="section-title" style="margin-bottom: 10px;">📺 CALIDAD</div>
-<p style="color: #aaa; font-size: 12px;">Depende del servidor seleccionado</p>
-</div>
-</div>
-</div>
+      <div class="section-box">
+        <div class="info-content">
+          <div>
+            <div class="section-title" style="margin-bottom: 10px;">📺 CALIDAD</div>
+            <p style="color: #aaa; font-size: 12px;">Depende del servidor seleccionado</p>
+          </div>
+        </div>
+      </div>
 
-<!-- DESCARGAS -->
-<div class="section-box">
-<div class="section-title">⬇ DESCARGAS</div>
-<table class="downloads-table">
-<thead>
-<tr>
-<th>SERVIDOR</th>
-<th>TAMAÑO</th>
-<th>FORMATO</th>
-<th>DESCARGAR</th>
-</tr>
-</thead>
-<tbody id="downloadsList">
-<tr><td colspan="4" style="text-align:center; color:#666;">Selecciona un servidor</td></tr>
-</tbody>
-</table>
-</div>
+      <div class="section-box">
+        <div class="section-title">⬇ DESCARGAS</div>
+        <table class="downloads-table">
+          <thead>
+            <tr>
+              <th>SERVIDOR</th><th>TAMAÑO</th><th>FORMATO</th><th>DESCARGAR</th>
+            </tr>
+          </thead>
+          <tbody id="downloadsList">
+            <tr><td colspan="4" style="text-align:center; color:#666;">Selecciona un servidor</td></tr>
+          </tbody>
+        </table>
+      </div>
 
-<!-- COMPARTIR -->
-<div class="section-box">
-<div class="section-title">↗ COMPARTIR</div>
-<p style="color: #aaa; font-size: 12px; margin-bottom: 12px;">Ayuda a la web dándole like a nuestras redes sociales</p>
-<div class="share-buttons">
-<button class="share-btn" onclick="copyToClipboard()"><i class="fas fa-link"></i> Copiar Link</button>
-<button class="share-btn"><i class="fab fa-facebook"></i> Facebook</button>
-<button class="share-btn"><i class="fab fa-twitter"></i> Twitter</button>
-<button class="share-btn"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-</div>
-</div>
+      <div class="section-box">
+        <div class="section-title">↗ COMPARTIR</div>
+        <p style="color: #aaa; font-size: 12px; margin-bottom: 12px;">Ayuda a la web dándole like a nuestras redes sociales</p>
+        <div class="share-buttons">
+          <button class="share-btn" onclick="copyToClipboard()"><i class="fas fa-link"></i> Copiar Link</button>
+          <button class="share-btn"><i class="fab fa-facebook"></i> Facebook</button>
+          <button class="share-btn"><i class="fab fa-twitter"></i> Twitter</button>
+          <button class="share-btn"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+        </div>
+      </div>
 
-<!-- COMENTARIOS -->
-<div class="section-box">
-<div class="section-title">💬 COMENTARIOS</div>
-<div class="comments-list">
-<div class="comment">
-<div class="comment-author">Usuario</div>
-<div class="comment-text">Excelente episodio! Gracias por subir tan rápido.</div>
-</div>
-</div>
-</div>
-</div>
+      <div class="section-box">
+        <div class="section-title">💬 COMENTARIOS</div>
+        <div class="comments-list">
+          <div class="comment">
+            <div class="comment-author">Usuario</div>
+            <div class="comment-text">Excelente episodio! Gracias por subir tan rápido.</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<!-- ===== COLUMNA DERECHA: SIDEBAR ===== -->
-<div class="player-sidebar">
-<!-- REPRODUCIENDO AHORA -->
-<div class="now-playing-card">
-<img class="now-playing-thumb" id="sidebarThumb" src="" alt="" onerror="this.style.display='none'">
-<div class="now-playing-info">
-<div class="now-playing-label">REPRODUCIENDO</div>
-<div class="now-playing-title" id="sidebarEpLabel">Ep -</div>
-<div class="now-playing-sub" id="sidebarServerCount">- servidores</div>
-</div>
-</div>
+    <!-- COLUMNA DERECHA -->
+    <div class="player-sidebar">
+      <div class="now-playing-card">
+        <img class="now-playing-thumb" id="sidebarThumb" src="" alt="" onerror="this.style.display='none'">
+        <div class="now-playing-info">
+          <div class="now-playing-label">REPRODUCIENDO</div>
+          <div class="now-playing-title" id="sidebarEpLabel">Ep -</div>
+          <div class="now-playing-sub" id="sidebarServerCount">- servidores</div>
+        </div>
+      </div>
 
-<!-- ANTERIOR / SIGUIENTE -->
-<div class="side-nav-buttons">
-<button class="btn" id="sidePrevBtn" onclick="navigateEpisode(-1)">‹ Anterior</button>
-<button class="btn" id="sideNextBtn" onclick="navigateEpisode(1)">Siguiente ›</button>
-</div>
+      <div class="side-nav-buttons">
+        <button class="btn" id="sidePrevBtn" onclick="navigateEpisode(-1)">‹ Anterior</button>
+        <button class="btn" id="sideNextBtn" onclick="navigateEpisode(1)">Siguiente ›</button>
+      </div>
 
-<!-- FICHA DEL ANIME -->
-<a href="#" class="sidebar-action-btn" id="fichaAnimeBtn">
-<i class="fas fa-list"></i> Ficha del anime
-</a>
+      <a href="#" class="sidebar-action-btn" id="fichaAnimeBtn">
+        <i class="fas fa-list"></i> Ficha del anime
+      </a>
 
-<!-- REPORTAR -->
-<button class="sidebar-action-btn btn-secondary-action" onclick="reportEpisode()">
-Reportar
-</button>
+      <button class="sidebar-action-btn btn-secondary-action" onclick="reportEpisode()">
+        Reportar
+      </button>
 
-<div class="sidebar-note">
-Si el video no carga, cambia de opción o reporta el episodio.
-</div>
+      <div class="sidebar-note">
+        Si el video no carga, cambia de opción o reporta el episodio.
+      </div>
 
-<!-- LISTA DE CAPÍTULOS -->
-<div class="chapters-box">
-<div class="chapters-header">
-<span class="chapters-header-title">Capítulos</span>
-<span class="chapters-count" id="chaptersCount">0</span>
-</div>
-<div class="chapters-list" id="chaptersList">
-<div class="chapters-empty">Cargando capítulos...</div>
-</div>
-</div>
-</div>
-</div>
+      <div class="chapters-box">
+        <div class="chapters-header">
+          <span class="chapters-header-title">Capítulos</span>
+          <span class="chapters-count" id="chaptersCount">0</span>
+        </div>
+        <div class="chapters-list" id="chaptersList">
+          <div class="chapters-empty">Cargando capítulos...</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- FOOTER -->
 <footer class="footer">
-<div style="max-width: 1150px; margin: 0 auto;">
-<p style="margin-bottom: 12px; color: #ccc;">Anime Online - Ningún vídeo se encuentra alojado en nuestros servidores.</p>
-<div style="display: flex; gap: 20px; justify-content: center; font-size: 12px;">
-<a href="#" style="color: #fff; text-decoration: none;">Términos y Condiciones</a>
-<a href="#" style="color: #fff; text-decoration: none;">Política de Privacidad</a>
-<a href="#" style="color: #fff; text-decoration: none;">Sobre AnimeFLV</a>
-</div>
-</div>
+  <div style="max-width: 1150px; margin: 0 auto;">
+    <p style="margin-bottom: 12px; color: #ccc;">Anime Online - Ningún vídeo se encuentra alojado en nuestros servidores.</p>
+    <div style="display: flex; gap: 20px; justify-content: center; font-size: 12px;">
+      <a href="#" style="color: #fff; text-decoration: none;">Términos y Condiciones</a>
+      <a href="#" style="color: #fff; text-decoration: none;">Política de Privacidad</a>
+      <a href="#" style="color: #fff; text-decoration: none;">Sobre AnimeFLV</a>
+    </div>
+  </div>
 </footer>
 
 <script>
@@ -310,15 +293,18 @@ let currentAnimeId = null;
 let currentAnimeSlug = null;
 let currentAnimeData = null;
 let currentEpisodeNumber = null;
-let allEpisodes = []; // [{id, numero, links, cover_image}]
+let allEpisodes = [];
 let currentServers = [];
 
 async function loadEpisodePage() {
-  // FIX: filtramos segmentos vacíos para que un "/" final (o dobles "//")
-  // no rompa el parseo del slug-episodio.
-  const pathParts = window.location.pathname.split('/').filter(Boolean);
-  const rawSlugWithEp = pathParts[pathParts.length - 1];
-  const slugWithEp = rawSlugWithEp ? decodeURIComponent(rawSlugWithEp) : '';
+  // ── FIX: filtrar segmentos vacíos para tolerar slashes finales o dobles ──
+  const pathParts = window.location.pathname
+    .split('/')
+    .filter(s => s.length > 0);
+
+  // pathParts debería ser ["ver", "rezero-kara-...-11"]
+  // Tomamos el último segmento no vacío
+  const slugWithEp = pathParts[pathParts.length - 1];
 
   if (!slugWithEp || !slugWithEp.includes('-')) {
     alert('Episodio no encontrado');
@@ -338,6 +324,7 @@ async function loadEpisodePage() {
   }
 
   await loadAnimeDataBySlug(animeSlug);
+
   if (currentAnimeId) {
     await loadAllEpisodesForAnime();
     await loadEpisodeServers();
@@ -364,9 +351,9 @@ async function loadAnimeDataBySlug(slug) {
     document.getElementById('mainTitle').textContent = animeData.titulo;
     document.getElementById('mainSubtitle').textContent = `Episodio ${currentEpisodeNumber}`;
     document.getElementById('episodeTitle').textContent = `Episodio ${currentEpisodeNumber}`;
-    document.getElementById('animeLink').href = `/anime.html?slug=${slug}`;
+    document.getElementById('animeLink').href = `/anime/${slug}`;
     document.getElementById('animeLink').textContent = animeData.titulo;
-    document.getElementById('fichaAnimeBtn').href = `/anime.html?slug=${slug}`;
+    document.getElementById('fichaAnimeBtn').href = `/anime/${slug}`;
     document.title = `${animeData.titulo} - Episodio ${currentEpisodeNumber} - AnimeFLV`;
   } catch (err) {
     console.error('Error loading anime:', err);
@@ -402,7 +389,8 @@ async function loadEpisodeServers() {
     currentServers = getServersForEpisode(ep);
     renderServers();
   } else {
-    document.getElementById('serversList').innerHTML = '<span style="color:#666; font-size:12px;">No hay episodio disponible</span>';
+    document.getElementById('serversList').innerHTML =
+      '<span style="color:#666; font-size:12px;">No hay episodio disponible</span>';
   }
 }
 
@@ -415,7 +403,6 @@ function renderServers() {
   serversList.innerHTML = currentServers.map((server, i) => `
     <button class="server-tab" onclick="selectServer(${i})">${server.server_name || `Servidor ${i + 1}`}</button>
   `).join('');
-  // Seleccionar automáticamente el primer servidor
   selectServer(0);
 }
 
@@ -430,7 +417,6 @@ function selectServer(index) {
   newIframe.allowFullscreen = true;
   newIframe.allow = 'fullscreen';
   videoPlayer.appendChild(newIframe);
-
   document.querySelectorAll('.server-tab').forEach((btn, i) => {
     btn.classList.toggle('active', i === index);
   });
@@ -448,7 +434,8 @@ function updateSidebarNowPlaying() {
   }
   document.getElementById('sidebarEpLabel').textContent = `Ep ${currentEpisodeNumber}`;
   const serverCount = currentServers.length;
-  document.getElementById('sidebarServerCount').textContent = `${serverCount} servidor${serverCount !== 1 ? 'es' : ''}`;
+  document.getElementById('sidebarServerCount').textContent =
+    `${serverCount} servidor${serverCount !== 1 ? 'es' : ''}`;
 }
 
 function renderChaptersList() {
@@ -462,7 +449,6 @@ function renderChaptersList() {
   }
 
   const fallbackCover = (currentAnimeData && currentAnimeData.imagen) || '';
-  // Mostrar del más reciente al más antiguo, igual que catálogos clásicos
   const sorted = [...allEpisodes].sort((a, b) => b.numero - a.numero);
 
   list.innerHTML = sorted.map(ep => {
@@ -480,11 +466,8 @@ function renderChaptersList() {
     `;
   }).join('');
 
-  // Centrar visualmente el capítulo activo dentro del scroll
   const activeEl = list.querySelector('.chapter-item.active');
-  if (activeEl) {
-    activeEl.scrollIntoView({ block: 'center' });
-  }
+  if (activeEl) activeEl.scrollIntoView({ block: 'center' });
 }
 
 function updateNavButtons() {
@@ -510,13 +493,11 @@ function navigateEpisode(direction) {
   } else {
     targetEp = [...epNumbers].reverse().find(n => n < currentEpisodeNumber);
   }
-  if (targetEp) {
-    window.location.href = `/ver/${currentAnimeSlug}-${targetEp}`;
-  }
+  if (targetEp) window.location.href = `/ver/${currentAnimeSlug}-${targetEp}`;
 }
 
 function goToAnime() {
-  window.location.href = `/anime.html?slug=${currentAnimeSlug}`;
+  window.location.href = `/anime/${currentAnimeSlug}`;
 }
 
 function reportEpisode() {
