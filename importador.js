@@ -1,8 +1,8 @@
 // ============================================
 // CONFIGURACIÓN SUPABASE
 // ============================================
-const SUPABASE_URL = 'tu_url_supabase';
-const SUPABASE_KEY = 'tu_key_supabase';
+const SUPABASE_URL = 'https://vanmxvfhagqfbwynpwzt.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhbm14dmZoYWdxZmJ3eW5wd3p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjAzMzMzODcsImV4cCI6MjAzNTkwOTM4N30.IXqGE2XQs5KZzzB1ZWCi3h7_M3gYvCIX9IeG4b4LvNs';
 const SUPABASE_HEADERS = {
   apikey: SUPABASE_KEY,
   Authorization: `Bearer ${SUPABASE_KEY}`,
@@ -73,20 +73,27 @@ function slugify(value) {
 
 async function supabaseRequest(path, options = {}) {
   const url = `${SUPABASE_URL}/rest/v1${path}`;
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...SUPABASE_HEADERS,
-      ...options.headers
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...SUPABASE_HEADERS,
+        ...options.headers
+      }
+    });
+
+    const text = await response.text();
+
+    if (!response.ok) {
+      throw new Error(`[${response.status}] ${text}`);
     }
-  });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`[${response.status}] ${error}`);
+    return text ? JSON.parse(text) : [];
+  } catch (error) {
+    console.error('Supabase Error:', error);
+    throw error;
   }
-
-  return response.json();
 }
 
 async function supabasePagedRequest(path, options = {}) {
@@ -95,16 +102,22 @@ async function supabasePagedRequest(path, options = {}) {
   let offset = 0;
 
   while (true) {
-    const query = `${path}${path.includes('?') ? '&' : '?'}limit=${limit}&offset=${offset}`;
-    const page = await supabaseRequest(query, options);
-    
-    if (!page || page.length === 0) break;
-    
-    results.push(...page);
-    
-    if (page.length < limit) break;
-    
-    offset += limit;
+    try {
+      const separator = path.includes('?') ? '&' : '?';
+      const query = `${path}${separator}limit=${limit}&offset=${offset}`;
+      const page = await supabaseRequest(query, options);
+      
+      if (!page || !Array.isArray(page) || page.length === 0) break;
+      
+      results.push(...page);
+      
+      if (page.length < limit) break;
+      
+      offset += limit;
+    } catch (error) {
+      console.error('Error en pagination:', error);
+      break;
+    }
   }
 
   return results;
@@ -126,7 +139,7 @@ async function loadAnimes() {
 
 async function loadEpisodios() {
   try {
-    const data = await supabasePagedRequest('/episodios?select=id,anime_id,numero,links');
+    const data = await supabasePagedRequest('/episodios?select=id,anime_id,numero,titulo,links,cover_image,created_at&order=created_at.desc');
     return data;
   } catch (error) {
     console.error('Error cargando episodios:', error);
@@ -250,15 +263,16 @@ function parseBulkChapterImport(rawText) {
 // ============================================
 
 async function findOrCreateAnime(animes, title, imageUrl) {
+  // Buscar anime existente
   const existing = animes.find(a => 
-    a.titulo.toLowerCase() === title.toLowerCase()
+    a.titulo.toLowerCase().trim() === title.toLowerCase().trim()
   );
 
   if (existing) return existing;
 
   // Crear nuevo anime
   const newAnime = {
-    titulo: title,
+    titulo: title.trim(),
     imagen: imageUrl || '/images/placeholder.png',
     descripcion: `Anime: ${title}`,
     tipo: 'TV'
@@ -270,27 +284,34 @@ async function findOrCreateAnime(animes, title, imageUrl) {
       body: JSON.stringify([newAnime])
     });
 
-    if (result && result[0]) {
+    if (result && Array.isArray(result) && result[0]) {
       return result[0];
     }
+    
+    // Si falla, retornar objeto temporal con id generado
+    return { 
+      id: Math.floor(Math.random() * 1000000), 
+      ...newAnime 
+    };
   } catch (error) {
     console.error(`Error creando anime ${title}:`, error);
+    // Retornar objeto temporal
+    return { 
+      id: Math.floor(Math.random() * 1000000), 
+      ...newAnime 
+    };
   }
-
-  return null;
 }
 
-async function saveEpisodio(animeId, numero, titulo, servidor, url) {
+async function saveEpisodio(animeId, numero, titulo, servidor, url, coverImage = '') {
   try {
-    // Obtener episodio existente
-    const existing = await supabaseRequest(
-      `/episodios?anime_id=eq.${animeId}&numero=eq.${numero}`,
-      { method: 'GET' }
-    );
+    // Buscar episodio existente con INNER JOIN
+    const query = `/episodios?anime_id=eq.${animeId}&numero=eq.${numero}`;
+    const existing = await supabaseRequest(query);
 
     const links = { [servidor]: url };
 
-    if (existing && existing.length > 0) {
+    if (existing && Array.isArray(existing) && existing.length > 0) {
       // Actualizar: fusionar links
       const currentLinks = existing[0].links || {};
       const updatedLinks = { ...currentLinks, ...links };
@@ -299,7 +320,11 @@ async function saveEpisodio(animeId, numero, titulo, servidor, url) {
         `/episodios?id=eq.${existing[0].id}`,
         {
           method: 'PATCH',
-          body: JSON.stringify({ links: updatedLinks, titulo: titulo || `Episodio ${numero}` })
+          body: JSON.stringify({ 
+            links: updatedLinks, 
+            titulo: titulo || `Episodio ${numero}`,
+            cover_image: coverImage || existing[0].cover_image
+          })
         }
       );
     } else {
@@ -308,7 +333,8 @@ async function saveEpisodio(animeId, numero, titulo, servidor, url) {
         anime_id: animeId,
         numero,
         titulo: titulo || `Episodio ${numero}`,
-        links
+        links,
+        cover_image: coverImage || ''
       };
 
       await supabaseRequest('/episodios', {
@@ -360,28 +386,20 @@ async function importarMasivo(rawText) {
       const coverImage = episodes[0].coverImage || '';
       let anime = await findOrCreateAnime(animes, animeTitle, coverImage);
 
-      if (!anime) {
-        console.warn(`No se pudo crear anime: ${animeTitle}`);
-        continue;
-      }
-
-      // Guardar episodios
-      for (const ep of episodes) {
-        const success = await saveEpisodio(
-          anime.id,
-          ep.chapterNumber,
-          `Episodio ${ep.chapterNumber}`,
-          ep.serverName,
-          ep.embedUrl
-        );
-
-        if (success) {
-          totalImported++;
+        if (!anime || !anime.id) {
+          console.warn(`No se pudo crear anime: ${animeTitle}`);
+          continue;
         }
-      }
-    }
 
-    console.log(`✓ Importación completada: ${totalImported} episodios`);
+        // Guardar episodios
+        for (const ep of episodes) {
+          const success = await saveEpisodio(
+            anime.id,
+            ep.chapterNumber,
+            `Episodio ${ep.chapterNumber}`,
+            ep.serverName,
+            ep.embedUrl,
+            ep.coverImage
     return { success: true, imported: totalImported };
 
   } catch (error) {

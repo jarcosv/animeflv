@@ -158,34 +158,82 @@ body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSys
   </footer>
 
   <script>
-    // Load episodes
+    const SUPABASE_URL = 'https://vanmxvfhagqfbwynpwzt.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhbm14dmZoYWdxZmJ3eW5wd3p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjAzMzMzODcsImV4cCI6MjAzNTkwOTM4N30.IXqGE2XQs5KZzzB1ZWCi3h7_M3gYvCIX9IeG4b4LvNs';
+    
+    const SUPABASE_HEADERS = {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json'
+    };
+
+    async function supabaseRequest(path) {
+      try {
+        const url = `${SUPABASE_URL}/rest/v1${path}`;
+        const response = await fetch(url, {
+          headers: SUPABASE_HEADERS
+        });
+        
+        if (!response.ok) throw new Error(`[${response.status}]`);
+        
+        const text = await response.text();
+        return text ? JSON.parse(text) : [];
+      } catch (error) {
+        console.error('Error Supabase:', error);
+        return [];
+      }
+    }
+
+    // Load episodes from Supabase
     async function loadEpisodes() {
       try {
-        const res = await fetch('https://api.jikan.moe/v4/watch/episodes');
-        const data = await res.json();
-        const episodes = data.data || [];
-        const grid = document.getElementById('episodesGrid');
+        // Obtener últimos episodios con sus animes
+        const episodes = await supabaseRequest(
+          "/episodios?select=id,numero,titulo,cover_image,created_at,anime_id&order=created_at.desc&limit=12"
+        );
         
-        grid.innerHTML = episodes.slice(0, 12).map((ep, i) => `
-          <div class="episode-card">
-            <div class="episode-image">
-              ${ep.entry?.images?.jpg?.image_url ? `
-                <img src="${ep.entry.images.jpg.image_url}" alt="${ep.entry.title}">
-              ` : `
-                <div class="episode-placeholder">▶</div>
-              `}
-              <div class="play-overlay">
-                <div class="play-button">▶</div>
+        if (!episodes || episodes.length === 0) {
+          document.getElementById('episodesGrid').innerHTML = '<div class="loading">No hay episodios disponibles</div>';
+          return;
+        }
+
+        // Obtener todos los animes para matching
+        const allAnimes = await supabaseRequest("/animes?select=id,titulo,imagen");
+        const animeMap = new Map(allAnimes.map(a => [a.id, a]));
+
+        const grid = document.getElementById('episodesGrid');
+        grid.innerHTML = episodes.map((ep, i) => {
+          const anime = animeMap.get(ep.anime_id);
+          const coverImage = ep.cover_image || anime?.imagen || '/placeholder.png';
+          const title = `${anime?.titulo || 'Anime'} - Ep ${ep.numero}`;
+          
+          return `
+            <div class="episode-card" data-episode-id="${ep.id}">
+              <div class="episode-image">
+                <img src="${coverImage}" alt="${title}" onerror="this.src='/placeholder.png'">
+                <div class="play-overlay">
+                  <div class="play-button">▶</div>
+                </div>
+                <div class="episode-badge">Episodio ${ep.numero}</div>
               </div>
-              <div class="episode-badge">Episodio ${i + 1}</div>
+              <div class="episode-info">
+                <div class="episode-title">${title}</div>
+              </div>
             </div>
-            <div class="episode-info">
-              <div class="episode-title">${ep.entry?.title || 'Episodio'}</div>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
+
+        // Agregar event listeners
+        document.querySelectorAll('.episode-card').forEach(card => {
+          card.addEventListener('click', function() {
+            const episodeId = this.dataset.episodeId;
+            console.log('Ver episodio:', episodeId);
+            // Aquí puedes agregar lógica para ir a la página de reproducción
+          });
+        });
       } catch (e) {
         console.error(e);
+        document.getElementById('episodesGrid').innerHTML = '<div class="loading">Error cargando episodios</div>';
       }
     }
 
