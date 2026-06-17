@@ -1,4 +1,7 @@
 // ===== SUPABASE CONFIG =====
+import { inject } from "@vercel/analytics"
+
+inject()
 const SUPABASE_URL = 'https://nwvmlgjstsfdlbwzdbsx.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53dm1sZ2pzdHNmZGxid3pkYnN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTUyNTYsImV4cCI6MjA5NzI3MTI1Nn0.mWSykvxeLxC437SLr4IPhnn2xdZKnHNszvd_7CnvbR8';
 
