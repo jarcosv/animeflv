@@ -184,6 +184,17 @@ body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSys
       }
     }
 
+    // Función para crear slug a partir de texto
+    function slugify(text) {
+      return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // Remover caracteres especiales
+        .replace(/\s+/g, '-')      // Espacios a guiones
+        .replace(/-+/g, '-')       // Guiones múltiples a uno solo
+        .replace(/^-+|-+$/g, '');  // Remover guiones al inicio/final
+    }
+
     // Load episodes from Supabase
     async function loadEpisodes() {
       try {
@@ -240,8 +251,14 @@ body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSys
         document.querySelectorAll('.episode-card').forEach(card => {
           card.addEventListener('click', function() {
             const episodeId = this.dataset.episodeId;
-            console.log('Ver episodio:', episodeId);
-            // Aquí puedes agregar lógica para ir a la página de reproducción
+            const episode = latestEpisodes.find(ep => ep.id.toString() === episodeId);
+            if (episode) {
+              const anime = animeMap.get(episode.anime_id);
+              if (anime) {
+                const slug = slugify(anime.titulo);
+                window.location.href = `/ver/${slug}-${episode.numero}`;
+              }
+            }
           });
         });
       } catch (e) {

@@ -184,6 +184,35 @@
 
   <script src="/js/main.js"></script>
   <script>
+    // Configuración de Supabase
+    const SUPABASE_URL = 'https://nwvmlgjstsfdlbwzdbsx.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53dm1sZ2pzdHNmZGxid3pkYnN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTUyNTYsImV4cCI6MjA5NzI3MTI1Nn0.mWSykvxeLxC437SLr4IPhnn2xdZKnHNszvd_7CnvbR8';
+    const SUPABASE_HEADERS = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json'
+    };
+
+    function supabaseRequest(path, options = {}) {
+      const url = `${SUPABASE_URL}/rest/v1${path}`;
+      const headers = { ...SUPABASE_HEADERS, ...options.headers };
+      if (options.method && ['POST', 'PATCH'].includes(options.method)) {
+        headers['Prefer'] = 'return=representation';
+      }
+      return fetch(url, { ...options, headers }).then(r => r.json());
+    }
+
+    // Función para crear slug a partir de texto
+    function slugify(text) {
+      return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
     // Player page specific logic
     let currentAnimeId = null;
     let currentEpisodeNumber = null;
@@ -191,47 +220,81 @@
     let currentServers = [];
 
     async function loadEpisodePage() {
-      // Get anime_id and episode_number from URL params
-      const params = new URLSearchParams(window.location.search);
-      currentAnimeId = params.get('anime_id');
-      currentEpisodeNumber = parseInt(params.get('ep')) || 1;
-
-      if (!currentAnimeId) {
-        alert('Anime no encontrado');
+      // Extract anime slug and episode number from URL
+      // URL format: /ver/{anime-slug}-{episode-number}
+      const pathParts = window.location.pathname.split('/');
+      const slugWithEp = pathParts[pathParts.length - 1]; // "anime-slug-12"
+      
+      if (!slugWithEp || !slugWithEp.includes('-')) {
+        alert('Episodio no encontrado');
         window.location.href = '/';
         return;
       }
 
-      await loadAnimeData();
-      await loadEpisodeServers();
+      // Separar slug del número de episodio (último número)
+      const parts = slugWithEp.split('-');
+      currentEpisodeNumber = parseInt(parts[parts.length - 1]);
+      const animeSlug = parts.slice(0, -1).join('-');
+
+      if (isNaN(currentEpisodeNumber) || !animeSlug) {
+        alert('URL inválida');
+        window.location.href = '/';
+        return;
+      }
+
+      await loadAnimeDataBySlug(animeSlug);
+      if (currentAnimeId) {
+        await loadEpisodeServers();
+      }
     }
 
-    async function loadAnimeData() {
+    async function loadAnimeDataBySlug(slug) {
       try {
-        const anime = await db.request('GET', `/animes?id=eq.${currentAnimeId}&select=*`);
-        if (anime && anime.length > 0) {
-          const animeData = anime[0];
-          document.getElementById('mainTitle').textContent = animeData.titulo;
-          document.getElementById('mainSubtitle').textContent = `Episodio ${currentEpisodeNumber}`;
-          document.getElementById('episodeTitle').textContent = animeData.titulo;
-          document.getElementById('animeLink').href = `?anime_id=${currentAnimeId}`;
-          document.getElementById('animeLink').textContent = animeData.titulo;
-
-          // Load all episodes for navigation
-          allEpisodes = await db.request('GET', `/episodios?anime_id=eq.${currentAnimeId}&select=numero&order=numero.asc`);
-          updateNavButtons();
+        // Obtener todos los animes y buscar por slug
+        const allAnimes = await supabaseRequest('/animes?select=id,titulo,imagen');
+        const animeData = allAnimes.find(anime => slugify(anime.titulo) === slug);
+        
+        if (!animeData) {
+          alert('Anime no encontrado');
+          window.location.href = '/';
+          return;
         }
+
+        currentAnimeId = animeData.id;
+        document.getElementById('mainTitle').textContent = animeData.titulo;
+        document.getElementById('mainSubtitle').textContent = `Episodio ${currentEpisodeNumber}`;
+        document.getElementById('episodeTitle').textContent = animeData.titulo;
+        document.getElementById('animeLink').href = `/directorio.html`;
+        document.getElementById('animeLink').textContent = animeData.titulo;
+
+        // Load all episodes for navigation
+        allEpisodes = await supabaseRequest(`/episodios?anime_id=eq.${currentAnimeId}&select=numero&order=numero.asc`);
+        updateNavButtons();
       } catch (err) {
         console.error('Error loading anime:', err);
+        alert('Error cargando anime');
       }
     }
 
     async function loadEpisodeServers() {
       try {
-        const episodes = await db.request('GET', `/episodios?anime_id=eq.${currentAnimeId}&numero=eq.${currentEpisodeNumber}&select=*`);
+        const episodes = await supabaseRequest(`/episodios?anime_id=eq.${currentAnimeId}&numero=eq.${currentEpisodeNumber}&select=*`);
         if (episodes && episodes.length > 0) {
-          currentServers = episodes[0].links || [];
+          const linksData = episodes[0].links;
+          // Si links es un objeto, convertir a array
+          if (typeof linksData === 'object' && !Array.isArray(linksData)) {
+            currentServers = Object.entries(linksData).map(([server, url]) => ({
+              server_name: server,
+              url: url
+            }));
+          } else if (Array.isArray(linksData)) {
+            currentServers = linksData;
+          } else {
+            currentServers = [];
+          }
           renderServers();
+        } else {
+          document.getElementById('serversList').innerHTML = '<p style="color:#666; font-size:12px;">No hay episodio disponible</p>';
         }
       } catch (err) {
         console.error('Error loading servers:', err);
@@ -252,18 +315,20 @@
 
     function selectServer(index) {
       const server = currentServers[index];
-      const iframe = document.querySelector('#videoPlayer iframe');
+      const videoPlayer = document.getElementById('videoPlayer');
       
-      if (iframe) iframe.remove();
+      // Limpiar contenido previo
+      videoPlayer.innerHTML = '';
 
+      // Crear iframe
       const newIframe = document.createElement('iframe');
-      newIframe.src = server.embed_url;
+      newIframe.src = server.url;
       newIframe.style.width = '100%';
       newIframe.style.height = '100%';
       newIframe.style.border = 'none';
       newIframe.allowFullscreen = true;
-      document.getElementById('videoPlayer').innerHTML = '';
-      document.getElementById('videoPlayer').appendChild(newIframe);
+      newIframe.allow = 'fullscreen';
+      videoPlayer.appendChild(newIframe);
 
       // Update active button
       document.querySelectorAll('.server-btn').forEach((btn, i) => {
@@ -275,7 +340,7 @@
       const prevBtn = document.getElementById('prevBtn');
       const nextBtn = document.getElementById('nextBtn');
       
-      const epNumbers = allEpisodes.map(e => e.numero).sort((a,b) => a-b);
+      const epNumbers = allEpisodes.map(e => e.numero).sort((a, b) => a - b);
       const prevEp = epNumbers.find(n => n < currentEpisodeNumber);
       const nextEp = epNumbers.find(n => n > currentEpisodeNumber);
 
@@ -284,7 +349,7 @@
     }
 
     function navigateEpisode(direction) {
-      const epNumbers = allEpisodes.map(e => e.numero).sort((a,b) => a-b);
+      const epNumbers = allEpisodes.map(e => e.numero).sort((a, b) => a - b);
       let targetEp = currentEpisodeNumber + direction;
       
       if (direction > 0) {
@@ -294,12 +359,17 @@
       }
 
       if (targetEp) {
-        window.location.href = `?anime_id=${currentAnimeId}&ep=${targetEp}`;
+        // Usar el slug actual para navegar al siguiente/anterior episodio
+        const pathParts = window.location.pathname.split('/');
+        const slugWithEp = pathParts[pathParts.length - 1];
+        const parts = slugWithEp.split('-');
+        const animeSlug = parts.slice(0, -1).join('-');
+        window.location.href = `/ver/${animeSlug}-${targetEp}`;
       }
     }
 
     function goHome() {
-      window.location.href = `/anime.html?id=${currentAnimeId}`;
+      window.location.href = '/';
     }
 
     function toggleLights() {
