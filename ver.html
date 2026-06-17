@@ -7,66 +7,89 @@
   <title>Ver Episodio - AnimeFLV</title>
   <link rel="icon" type="image/png" href="/logo.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/styles/main.css">
   <style>
-    .player-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-    .breadcrumb { font-size: 12px; color: #aaa; margin-bottom: 20px; }
-    .breadcrumb a { color: #0ea5e9; text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #2a2a2a; }
+::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 4px; }
 
-    .player-wrapper { background: #242424; border-radius: 8px; overflow: hidden; margin-bottom: 30px; }
-    .video-player { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
-    .player-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #666; }
-    .player-placeholder i { font-size: 64px; margin-bottom: 20px; }
+.navbar { background: #242424; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; padding: 12px 30px; }
+.navbar-container { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+.navbar-logo img { height: 40px; }
+.navbar-links { display: flex; gap: 30px; flex: 1; justify-content: flex-end; }
+.nav-link { color: #aaa; font-size: 13px; font-weight: 500; text-decoration: none; background: 0; border: 0; cursor: pointer; transition: color 0.2s; }
+.nav-link:hover, .nav-link.active { color: #0ea5e9; }
+.navbar-search { display: flex; position: relative; align-items: center; margin-left: auto; }
+.search-input { background: #1f1f1f; color: #fff; border: 1px solid #333; height: 32px; padding: 0 12px 0 36px; border-radius: 20px; font-size: 12px; width: 150px; }
+.search-input:focus { outline: 0; border-color: #0ea5e9; }
+.search-button { position: absolute; left: 10px; background: 0; color: #0ea5e9; border: 0; cursor: pointer; font-size: 14px; padding: 0; }
+.login-btn { color: #fff; font-size: 12px; font-weight: 600; background: linear-gradient(135deg, #0ea5e9, #06b6d4); border: 0; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
 
-    .episode-info { padding: 20px; border-bottom: 1px solid #2a2a2a; }
-    .episode-title { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 8px; }
-    .episode-subtitle { font-size: 14px; color: #aaa; }
+.footer { background: #1a1a1a; border-top: 1px solid #2a2a2a; padding: 30px 20px; margin-top: 40px; text-align: center; color: #666; font-size: 12px; }
 
-    .controls { padding: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
-    .nav-buttons { display: flex; gap: 10px; }
-    .btn { background: #0ea5e9; color: #fff; border: 0; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: background 0.2s; }
-    .btn:hover { background: #06b6d4; }
-    .btn:disabled { background: #555; cursor: not-allowed; }
-    .btn-secondary { background: #333; }
-    .btn-secondary:hover { background: #444; }
+/* PLAYER PAGE STYLES */
+.player-container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
 
-    .servers-section { padding: 20px; border-bottom: 1px solid #2a2a2a; }
-    .section-title { font-size: 14px; font-weight: 700; color: #0ea5e9; margin-bottom: 15px; }
-    .servers-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
-    .server-btn { background: #1a1a1a; border: 1px solid #333; color: #aaa; padding: 12px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
-    .server-btn:hover { background: #2a2a2a; color: #0ea5e9; border-color: #0ea5e9; }
-    .server-btn.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
+.breadcrumb { font-size: 12px; color: #aaa; margin-bottom: 20px; }
+.breadcrumb a { color: #0ea5e9; text-decoration: none; cursor: pointer; }
+.breadcrumb a:hover { text-decoration: underline; }
 
-    .downloads-section { padding: 20px; }
-    .downloads-table { width: 100%; border-collapse: collapse; }
-    .downloads-table th, .downloads-table td { padding: 12px; text-align: left; border-bottom: 1px solid #2a2a2a; font-size: 12px; }
-    .downloads-table th { background: #1a1a1a; color: #0ea5e9; font-weight: 600; }
-    .downloads-table tr:hover { background: #1a1a1a; }
-    .downloads-table a { color: #0ea5e9; text-decoration: none; }
-    .downloads-table a:hover { text-decoration: underline; }
+.player-header { margin-bottom: 20px; }
+.player-title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+.player-subtitle { font-size: 14px; color: #aaa; }
 
-    .share-section { padding: 20px; border-bottom: 1px solid #2a2a2a; }
-    .share-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-    .share-btn { background: #1a1a1a; border: 1px solid #333; color: #aaa; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 8px; }
-    .share-btn:hover { background: #2a2a2a; color: #0ea5e9; }
+.player-wrapper { background: #000; border-radius: 4px; overflow: hidden; margin-bottom: 30px; aspect-ratio: 16/9; }
+.video-player { width: 100%; height: 100%; }
+.player-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #666; background: #000; }
+.player-placeholder i { font-size: 64px; margin-bottom: 20px; }
 
-    .comments-section { padding: 20px; }
-    .comments-list { max-height: 400px; overflow-y: auto; }
-    .comment { background: #1a1a1a; padding: 15px; margin-bottom: 10px; border-radius: 4px; font-size: 12px; }
-    .comment-author { color: #0ea5e9; font-weight: 600; margin-bottom: 5px; }
-    .comment-text { color: #aaa; }
+.player-controls { background: #242424; border-radius: 4px; padding: 20px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.nav-buttons { display: flex; gap: 10px; }
+.btn { background: #0ea5e9; color: #fff; border: 0; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: background 0.2s; }
+.btn:hover { background: #06b6d4; }
+.btn:disabled { background: #555; cursor: not-allowed; opacity: 0.5; }
+.btn-secondary { background: #333; }
+.btn-secondary:hover { background: #444; }
 
-    @media (max-width: 768px) {
-      .controls { flex-direction: column; }
-      .servers-list { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
-      .downloads-table { font-size: 11px; }
-      .downloads-table th, .downloads-table td { padding: 8px; }
-    }
+.servers-section { background: #242424; border-radius: 4px; padding: 20px; margin-bottom: 20px; }
+.section-title { font-size: 14px; font-weight: 700; color: #0ea5e9; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+.servers-tabs { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+.server-btn { background: #1a1a1a; border: 1px solid #333; color: #aaa; padding: 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; }
+.server-btn:hover { background: #2a2a2a; color: #0ea5e9; border-color: #0ea5e9; }
+.server-btn.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
+
+.info-section { background: #242424; border-radius: 4px; padding: 20px; margin-bottom: 20px; }
+.info-content { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+
+.downloads-section { background: #242424; border-radius: 4px; padding: 20px; margin-bottom: 20px; }
+.downloads-table { width: 100%; border-collapse: collapse; }
+.downloads-table th, .downloads-table td { padding: 12px; text-align: left; border-bottom: 1px solid #2a2a2a; font-size: 12px; }
+.downloads-table th { background: #1a1a1a; color: #0ea5e9; font-weight: 600; }
+.downloads-table tr:hover { background: #1a1a1a; }
+.downloads-table a { color: #0ea5e9; text-decoration: none; }
+.downloads-table a:hover { text-decoration: underline; }
+
+.share-section { background: #242424; border-radius: 4px; padding: 20px; margin-bottom: 20px; }
+.share-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.share-btn { background: #1a1a1a; border: 1px solid #333; color: #aaa; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+.share-btn:hover { background: #2a2a2a; color: #0ea5e9; border-color: #0ea5e9; }
+
+.comments-section { background: #242424; border-radius: 4px; padding: 20px; }
+.comments-list { }
+.comment { background: #1a1a1a; padding: 15px; margin-bottom: 10px; border-radius: 4px; border-left: 3px solid #0ea5e9; }
+.comment-author { color: #0ea5e9; font-weight: 600; margin-bottom: 5px; }
+.comment-text { color: #aaa; font-size: 13px; }
+
+@media (max-width: 768px) {
+  .player-controls { flex-direction: column; }
+  .servers-tabs { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+}
   </style>
 </head>
 <body>
-  <!-- NAVBAR (same as index) -->
+  <!-- NAVBAR (igual que index) -->
   <nav class="navbar">
     <div class="navbar-container">
       <div class="navbar-logo">
@@ -88,89 +111,99 @@
   <div class="player-container">
     <!-- BREADCRUMB -->
     <div class="breadcrumb">
-      <a href="/">Inicio</a> / 
-      <a href="#" id="animeLink">Anime</a> / 
+      <a href="/">Inicio</a> /
+      <a href="#" id="animeLink">Anime</a> /
       <span id="episodeTitle">Episodio</span>
     </div>
 
+    <!-- TITULO Y SUBTÍTULO -->
+    <div class="player-header">
+      <h1 class="player-title" id="mainTitle">Cargando...</h1>
+      <p class="player-subtitle" id="mainSubtitle">Episodio -</p>
+    </div>
+
     <!-- PLAYER -->
-    <div class="player-wrapper">
-      <div class="video-player" id="videoPlayer">
-        <div class="player-placeholder">
-          <i class="fas fa-play-circle"></i>
-          <p>Selecciona un servidor para reproducir</p>
-        </div>
-      </div>
-      <div class="episode-info">
-        <div class="episode-title" id="mainTitle">Cargando...</div>
-        <div class="episode-subtitle" id="mainSubtitle">Episodio -</div>
+    <div class="player-wrapper" id="videoPlayer">
+      <div class="player-placeholder">
+        <i class="fas fa-play-circle"></i>
+        <p>Selecciona un servidor para reproducir</p>
       </div>
     </div>
 
-    <!-- CONTROLES -->
-    <div class="player-wrapper">
-      <div class="controls">
-        <div class="nav-buttons">
-          <button class="btn" id="prevBtn" onclick="navigateEpisode(-1)">← ANTERIOR</button>
-          <button class="btn btn-secondary" id="homeBtn" onclick="goHome()">◉ ANIME</button>
-          <button class="btn" id="nextBtn" onclick="navigateEpisode(1)">SIGUIENTE →</button>
-        </div>
-        <div class="nav-buttons">
-          <button class="btn btn-secondary" onclick="toggleLights()">🌙 APAGAR LUCES</button>
-          <button class="btn btn-secondary" onclick="downloadEpisode()">⬇ DESCARGAR</button>
-        </div>
+    <!-- CONTROLES Y BOTONES -->
+    <div class="player-controls">
+      <div class="nav-buttons">
+        <button class="btn" id="prevBtn" onclick="navigateEpisode(-1)">← ANTERIOR</button>
+        <button class="btn btn-secondary" id="homeBtn" onclick="goHome()">◉ ANIME</button>
+        <button class="btn" id="nextBtn" onclick="navigateEpisode(1)">SIGUIENTE →</button>
       </div>
-
-      <!-- SERVIDORES -->
-      <div class="servers-section">
-        <div class="section-title">▶ SERVIDORES</div>
-        <div class="servers-list" id="serversList">
-          <p style="color:#666; font-size:12px;">Cargando servidores...</p>
-        </div>
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="reportEpisode()" title="Reportar problemas"><i class="fas fa-flag"></i> REPORTAR</button>
+        <button class="btn btn-secondary" onclick="downloadEpisode()"><i class="fas fa-download"></i> DESCARGAR</button>
       </div>
+    </div>
 
-      <!-- DESCARGAS -->
-      <div class="downloads-section">
-        <div class="section-title">⬇ DESCARGAS</div>
-        <table class="downloads-table">
-          <thead>
-            <tr>
-              <th>CALIDAD</th>
-              <th>SERVIDOR</th>
-              <th>ACCIÓN</th>
-            </tr>
-          </thead>
-          <tbody id="downloadsList">
-            <tr><td colspan="3" style="text-align:center; color:#666;">Selecciona un servidor</td></tr>
-          </tbody>
-        </table>
+    <!-- SERVIDORES -->
+    <div class="servers-section">
+      <div class="section-title">▶ SERVIDORES</div>
+      <div class="servers-tabs" id="serversList">
+        <p style="color:#666; font-size:12px;">Cargando servidores...</p>
       </div>
+    </div>
 
-      <!-- COMPARTIR -->
-      <div class="share-section">
-        <div class="section-title">↗ COMPARTIR</div>
-        <div class="share-buttons">
-          <button class="share-btn" onclick="copyToClipboard()"><i class="fas fa-link"></i> Copiar Link</button>
-          <button class="share-btn"><i class="fab fa-facebook"></i> Facebook</button>
-          <button class="share-btn"><i class="fab fa-twitter"></i> Twitter</button>
-          <button class="share-btn"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+    <!-- INFORMACIÓN -->
+    <div class="info-section">
+      <div class="info-content">
+        <div>
+          <div class="section-title" style="margin-bottom: 10px;">📺 CALIDAD</div>
+          <p style="color: #aaa; font-size: 12px;">Depende del servidor seleccionado</p>
         </div>
       </div>
+    </div>
 
-      <!-- COMENTARIOS -->
-      <div class="comments-section">
-        <div class="section-title">💬 COMENTARIOS</div>
-        <div class="comments-list">
-          <div class="comment">
-            <div class="comment-author">Usuario</div>
-            <div class="comment-text">Excelente episodio! Gracias por subir tan rápido.</div>
-          </div>
+    <!-- DESCARGAS -->
+    <div class="downloads-section">
+      <div class="section-title">⬇ DESCARGAS</div>
+      <table class="downloads-table">
+        <thead>
+          <tr>
+            <th>SERVIDOR</th>
+            <th>TAMAÑO</th>
+            <th>FORMATO</th>
+            <th>DESCARGAR</th>
+          </tr>
+        </thead>
+        <tbody id="downloadsList">
+          <tr><td colspan="4" style="text-align:center; color:#666;">Selecciona un servidor</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- COMPARTIR -->
+    <div class="share-section">
+      <div class="section-title">↗ COMPARTIR</div>
+      <p style="color: #aaa; font-size: 12px; margin-bottom: 12px;">Ayuda a la web dándole like a nuestras redes sociales</p>
+      <div class="share-buttons">
+        <button class="share-btn" onclick="copyToClipboard()"><i class="fas fa-link"></i> Copiar Link</button>
+        <button class="share-btn"><i class="fab fa-facebook"></i> Facebook</button>
+        <button class="share-btn"><i class="fab fa-twitter"></i> Twitter</button>
+        <button class="share-btn"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+      </div>
+    </div>
+
+    <!-- COMENTARIOS -->
+    <div class="comments-section">
+      <div class="section-title">💬 COMENTARIOS</div>
+      <div class="comments-list">
+        <div class="comment">
+          <div class="comment-author">Usuario</div>
+          <div class="comment-text">Excelente episodio! Gracias por subir tan rápido.</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- FOOTER (same as index) -->
+  <!-- FOOTER (igual que index) -->
   <footer class="footer">
     <div style="max-width: 1150px; margin: 0 auto;">
       <p style="margin-bottom: 12px; color: #ccc;">Anime Online - Ningún vídeo se encuentra alojado en nuestros servidores.</p>
@@ -184,7 +217,6 @@
 
   <script src="/js/main.js"></script>
   <script>
-    // Configuración de Supabase
     const SUPABASE_URL = 'https://nwvmlgjstsfdlbwzdbsx.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53dm1sZ2pzdHNmZGxid3pkYnN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTUyNTYsImV4cCI6MjA5NzI3MTI1Nn0.mWSykvxeLxC437SLr4IPhnn2xdZKnHNszvd_7CnvbR8';
     const SUPABASE_HEADERS = {
@@ -202,7 +234,6 @@
       return fetch(url, { ...options, headers }).then(r => r.json());
     }
 
-    // Función para crear slug a partir de texto
     function slugify(text) {
       return text
         .toLowerCase()
@@ -213,17 +244,14 @@
         .replace(/^-+|-+$/g, '');
     }
 
-    // Player page specific logic
     let currentAnimeId = null;
     let currentEpisodeNumber = null;
     let allEpisodes = [];
     let currentServers = [];
 
     async function loadEpisodePage() {
-      // Extract anime slug and episode number from URL
-      // URL format: /ver/{anime-slug}-{episode-number}
       const pathParts = window.location.pathname.split('/');
-      const slugWithEp = pathParts[pathParts.length - 1]; // "anime-slug-12"
+      const slugWithEp = pathParts[pathParts.length - 1];
       
       if (!slugWithEp || !slugWithEp.includes('-')) {
         alert('Episodio no encontrado');
@@ -231,7 +259,6 @@
         return;
       }
 
-      // Separar slug del número de episodio (último número)
       const parts = slugWithEp.split('-');
       currentEpisodeNumber = parseInt(parts[parts.length - 1]);
       const animeSlug = parts.slice(0, -1).join('-');
@@ -250,7 +277,6 @@
 
     async function loadAnimeDataBySlug(slug) {
       try {
-        // Obtener todos los animes y buscar por slug
         const allAnimes = await supabaseRequest('/animes?select=id,titulo,imagen');
         const animeData = allAnimes.find(anime => slugify(anime.titulo) === slug);
         
@@ -267,7 +293,6 @@
         document.getElementById('animeLink').href = `/directorio.html`;
         document.getElementById('animeLink').textContent = animeData.titulo;
 
-        // Load all episodes for navigation
         allEpisodes = await supabaseRequest(`/episodios?anime_id=eq.${currentAnimeId}&select=numero&order=numero.asc`);
         updateNavButtons();
       } catch (err) {
@@ -281,7 +306,6 @@
         const episodes = await supabaseRequest(`/episodios?anime_id=eq.${currentAnimeId}&numero=eq.${currentEpisodeNumber}&select=*`);
         if (episodes && episodes.length > 0) {
           const linksData = episodes[0].links;
-          // Si links es un objeto, convertir a array
           if (typeof linksData === 'object' && !Array.isArray(linksData)) {
             currentServers = Object.entries(linksData).map(([server, url]) => ({
               server_name: server,
@@ -317,10 +341,7 @@
       const server = currentServers[index];
       const videoPlayer = document.getElementById('videoPlayer');
       
-      // Limpiar contenido previo
       videoPlayer.innerHTML = '';
-
-      // Crear iframe
       const newIframe = document.createElement('iframe');
       newIframe.src = server.url;
       newIframe.style.width = '100%';
@@ -330,7 +351,6 @@
       newIframe.allow = 'fullscreen';
       videoPlayer.appendChild(newIframe);
 
-      // Update active button
       document.querySelectorAll('.server-btn').forEach((btn, i) => {
         btn.classList.toggle('active', i === index);
       });
@@ -359,7 +379,6 @@
       }
 
       if (targetEp) {
-        // Usar el slug actual para navegar al siguiente/anterior episodio
         const pathParts = window.location.pathname.split('/');
         const slugWithEp = pathParts[pathParts.length - 1];
         const parts = slugWithEp.split('-');
@@ -372,12 +391,23 @@
       window.location.href = '/';
     }
 
-    function toggleLights() {
-      document.body.style.background = document.body.style.background === '#000' ? '#1a1a1a' : '#000';
+    function reportEpisode() {
+      alert('Función de reporte disponible próximamente');
     }
 
     function downloadEpisode() {
       alert('Función de descarga disponible próximamente');
+    }
+
+    function copyToClipboard() {
+      navigator.clipboard.writeText(window.location.href);
+      alert('Link copiado al portapapeles');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadEpisodePage);
+  </script>
+</body>
+</html>
     }
 
     function copyToClipboard() {
