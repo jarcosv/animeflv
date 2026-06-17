@@ -2,7 +2,7 @@
 // CONFIGURACIÓN SUPABASE
 // ============================================
 const SUPABASE_URL = 'https://vanmxvfhagqfbwynpwzt.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhbm14dmZoYWdxZmJ3eW5wd3p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjAzMzMzODcsImV4cCI6MjAzNTkwOTM4N30.IXqGE2XQs5KZzzB1ZWCi3h7_M3gYvCIX9IeG4b4LvNs';
+const SUPABASE_KEY = 'sb_publishable_EhgSd_v1QI6wxfii43fY6w_24g2Z4sA';
 const SUPABASE_HEADERS = {
   apikey: SUPABASE_KEY,
   Authorization: `Bearer ${SUPABASE_KEY}`,
@@ -218,34 +218,75 @@ function parseBulkChapterImport(rawText) {
       try {
         const packageData = JSON.parse(jsonStr);
         
-        // Detectar formato bulk_package
-        if (packageData.import_type === 'bulk_package' || packageData.chapters) {
-          const chapters = packageData.chapters || [];
+        // Detectar formato bulk_package o array de capítulos
+        if (packageData.import_type === 'bulk_package' || packageData.chapters || Array.isArray(packageData)) {
+          let chapters = [];
+          
+          // Si es un array directamente, es un array de capítulos
+          if (Array.isArray(packageData)) {
+            chapters = packageData;
+          } else {
+            chapters = packageData.chapters || [];
+          }
           
           if (chapters.length > 0) {
             let animeTitle = '';
             let animeCover = '';
             
-            // Obtener título del anime
-            if (packageData.anime_title) animeTitle = packageData.anime_title;
-            else if (packageData.title) animeTitle = packageData.title;
-            else if (packageData.anime) animeTitle = packageData.anime;
-            else if (packageData.animeTitle) animeTitle = packageData.animeTitle;
-            else animeTitle = getTitleBeforeJson(text.substring(0, cursor));
+            // Obtener título del anime (solo si no es array puro)
+            if (!Array.isArray(packageData)) {
+              if (packageData.anime_title) animeTitle = packageData.anime_title;
+              else if (packageData.title) animeTitle = packageData.title;
+              else if (packageData.anime) animeTitle = packageData.anime;
+              else if (packageData.animeTitle) animeTitle = packageData.animeTitle;
+              else animeTitle = getTitleBeforeJson(text.substring(0, cursor));
 
-            // Obtener portada del anime
-            if (packageData.anime_cover) animeCover = packageData.anime_cover;
-            else if (packageData.image_url) animeCover = packageData.image_url;
-            else if (packageData.cover) animeCover = packageData.cover;
-            else if (packageData.poster) animeCover = packageData.poster;
+              // Obtener portada del anime
+              if (packageData.anime_cover) animeCover = packageData.anime_cover;
+              else if (packageData.image_url) animeCover = packageData.image_url;
+              else if (packageData.cover) animeCover = packageData.cover;
+              else if (packageData.poster) animeCover = packageData.poster;
+            }
+
+            // Si no hay título, usar del primer capítulo o default
+            if (!animeTitle && chapters.length > 0) {
+              animeTitle = chapters[0].anime_title || 
+                          chapters[0].title || 
+                          chapters[0].anime || 
+                          'Anime Importado';
+            }
 
             for (const chapter of chapters) {
-              const chapterNum = chapter.chapter_number || chapter.numero || 0;
-              const serverName = chapter.server_name || chapter.servidor || 'Principal';
-              const embedUrl = chapter.embed_url || chapter.url || '';
-              const coverImage = chapter.cover_image || pickImageFromValue(chapter) || '';
+              // Permitir varios formatos de número de episodio
+              let chapterNum = chapter.chapter_number || 
+                              chapter.numero || 
+                              chapter.episode_number ||
+                              chapter.episodio ||
+                              0;
+              
+              // Si es un número en string, convertir
+              if (typeof chapterNum === 'string' && !isNaN(chapterNum)) {
+                chapterNum = parseInt(chapterNum, 10);
+              }
 
-              if (embedUrl) {
+              const serverName = chapter.server_name || 
+                                chapter.servidor || 
+                                chapter.server ||
+                                'Principal';
+              
+              // Permitir varios formatos de URL
+              const embedUrl = chapter.embed_url || 
+                              chapter.url || 
+                              chapter.link ||
+                              chapter.enlace || '';
+              
+              const coverImage = chapter.cover_image || 
+                                chapter.cover ||
+                                chapter.image ||
+                                pickImageFromValue(chapter) || '';
+
+              // Crear fila incluso si no hay URL (permite edición posterior)
+              if (animeTitle && chapterNum > 0) {
                 rows.push({
                   animeTitle: animeTitle.trim(),
                   chapterNumber: chapterNum,
@@ -261,6 +302,7 @@ function parseBulkChapterImport(rawText) {
 
         cursor = endIndex;
       } catch (error) {
+        console.error('Error parsing JSON:', error.message);
         cursor++;
       }
     } else {
@@ -268,6 +310,7 @@ function parseBulkChapterImport(rawText) {
     }
   }
 
+  console.log(`Parser encontró ${rows.length} episodios`);
   return rows;
 }
 
