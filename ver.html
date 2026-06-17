@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AnimeFLV - Ver Anime Online">
-  <title>Ver Episodio - AnimeFLV</title>
-  <link rel="icon" type="image/png" href="/logo.png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="AnimeFLV - Ver Anime Online">
+<title>Ver Episodio - AnimeFLV</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #2a2a2a; }
 ::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 4px; }
-
 .navbar { background: #242424; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; padding: 12px 30px; }
 .navbar-container { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 40px; }
 .navbar-logo img { height: 40px; }
@@ -26,37 +25,25 @@ body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSys
 .search-input:focus { outline: 0; border-color: #0ea5e9; }
 .search-button { position: absolute; left: 10px; background: 0; color: #0ea5e9; border: 0; cursor: pointer; font-size: 14px; padding: 0; }
 .login-btn { color: #fff; font-size: 12px; font-weight: 600; background: linear-gradient(135deg, #0ea5e9, #06b6d4); border: 0; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-
 .footer { background: #1a1a1a; border-top: 1px solid #2a2a2a; padding: 30px 20px; margin-top: 40px; text-align: center; color: #666; font-size: 12px; }
-
-/* PLAYER PAGE STYLES */
 .player-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-
 .breadcrumb { font-size: 12px; color: #aaa; margin-bottom: 20px; }
 .breadcrumb a { color: #0ea5e9; text-decoration: none; cursor: pointer; }
 .breadcrumb a:hover { text-decoration: underline; }
-
 .player-header { margin-bottom: 20px; }
 .player-title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
 .player-subtitle { font-size: 14px; color: #aaa; }
-
-/* TWO COLUMN LAYOUT */
 .player-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
-
-/* LEFT COLUMN */
 .player-main { min-width: 0; }
-
 .servers-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 .server-tab { background: #242424; border: 1px solid #333; color: #aaa; padding: 10px 22px; border-radius: 4px 4px 0 0; cursor: pointer; font-size: 13px; font-weight: 700; transition: all 0.2s; }
 .server-tab:hover { color: #0ea5e9; }
 .server-tab.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
-
 .player-wrapper { background: #000; border-radius: 4px; overflow: hidden; margin-bottom: 16px; aspect-ratio: 16/9; position: relative; }
 .video-player { width: 100%; height: 100%; border: 0; }
 .player-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #666; background: #000; gap: 14px; }
 .player-placeholder i { font-size: 56px; }
 .player-placeholder p { font-size: 13px; }
-
 .player-controls { background: #242424; border-radius: 4px; padding: 16px 20px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
 .nav-buttons { display: flex; gap: 10px; }
 .btn { background: #0ea5e9; color: #fff; border: 0; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: background 0.2s; }
@@ -64,47 +51,35 @@ body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSys
 .btn:disabled { background: #555; cursor: not-allowed; opacity: 0.5; }
 .btn-secondary { background: #333; }
 .btn-secondary:hover { background: #444; }
-
 .section-box { background: #242424; border-radius: 4px; padding: 20px; margin-bottom: 20px; }
 .section-title { font-size: 14px; font-weight: 700; color: #0ea5e9; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-
 .info-content { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
-
 .downloads-table { width: 100%; border-collapse: collapse; }
 .downloads-table th, .downloads-table td { padding: 12px; text-align: left; border-bottom: 1px solid #2a2a2a; font-size: 12px; }
 .downloads-table th { background: #1a1a1a; color: #0ea5e9; font-weight: 600; }
 .downloads-table tr:hover { background: #1a1a1a; }
 .downloads-table a { color: #0ea5e9; text-decoration: none; }
 .downloads-table a:hover { text-decoration: underline; }
-
 .share-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
 .share-btn { background: #1a1a1a; border: 1px solid #333; color: #aaa; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
 .share-btn:hover { background: #2a2a2a; color: #0ea5e9; border-color: #0ea5e9; }
-
 .comment { background: #1a1a1a; padding: 15px; margin-bottom: 10px; border-radius: 4px; border-left: 3px solid #0ea5e9; }
 .comment-author { color: #0ea5e9; font-weight: 600; margin-bottom: 5px; }
 .comment-text { color: #aaa; font-size: 13px; }
-
-/* RIGHT COLUMN (SIDEBAR) */
 .player-sidebar { display: flex; flex-direction: column; gap: 16px; }
-
 .now-playing-card { background: #242424; border-radius: 4px; padding: 14px; display: flex; gap: 12px; align-items: center; }
 .now-playing-thumb { width: 64px; height: 64px; border-radius: 4px; object-fit: cover; background: #1a1a1a; flex-shrink: 0; }
 .now-playing-info { min-width: 0; }
 .now-playing-label { font-size: 10px; color: #0ea5e9; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
 .now-playing-title { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
 .now-playing-sub { font-size: 11px; color: #aaa; }
-
 .side-nav-buttons { display: flex; gap: 8px; }
 .side-nav-buttons .btn { flex: 1; text-align: center; padding: 10px 8px; font-size: 11px; }
-
 .sidebar-action-btn { display: block; width: 100%; background: #0ea5e9; color: #fff; border: 0; padding: 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 700; text-align: center; text-decoration: none; transition: background 0.2s; }
 .sidebar-action-btn:hover { background: #06b6d4; }
 .sidebar-action-btn.btn-secondary-action { background: #333; color: #fff; }
 .sidebar-action-btn.btn-secondary-action:hover { background: #444; }
-
 .sidebar-note { background: #242424; border-radius: 4px; padding: 14px; font-size: 12px; color: #aaa; line-height: 1.5; }
-
 .chapters-box { background: #242424; border-radius: 4px; overflow: hidden; }
 .chapters-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #1a1a1a; border-bottom: 2px solid #0ea5e9; }
 .chapters-header-title { color: #0ea5e9; font-size: 14px; font-weight: 700; }
@@ -119,455 +94,445 @@ body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSys
 .chapter-item.active .chapter-ep-title { color: #0ea5e9; }
 .chapter-servers-count { font-size: 11px; color: #888; margin-top: 2px; }
 .chapters-empty { padding: 20px 16px; text-align: center; color: #666; font-size: 12px; }
-
 @media (max-width: 900px) {
-  .player-layout { grid-template-columns: 1fr; }
-  .chapters-list { max-height: 320px; }
+.player-layout { grid-template-columns: 1fr; }
+.chapters-list { max-height: 320px; }
 }
-
 @media (max-width: 768px) {
-  .player-controls { flex-direction: column; }
-  .navbar-links { display: none; }
+.player-controls { flex-direction: column; }
+.navbar-links { display: none; }
 }
-  </style>
+</style>
 </head>
 <body>
-  <!-- NAVBAR -->
-  <nav class="navbar">
-    <div class="navbar-container">
-      <div class="navbar-logo">
-        <a href="/"><img src="/image.png" alt="AnimeFLV" style="height:40px;"></a>
-      </div>
-      <div class="navbar-links" id="navbarLinks">
-        <a href="/" class="nav-link">INICIO</a>
-        <a href="/directorio.html" class="nav-link">DIRECTORIO ANIME</a>
-      </div>
-      <div class="navbar-search">
-        <button class="search-button"><i class="fa-solid fa-search"></i></button>
-        <input type="text" class="search-input" placeholder="Buscar...">
-      </div>
-      <button class="login-btn">LOGIN</button>
-    </div>
-  </nav>
+<!-- NAVBAR -->
+<nav class="navbar">
+<div class="navbar-container">
+<div class="navbar-logo">
+<a href="/"><img src="/image.png" alt="AnimeFLV" style="height:40px;"></a>
+</div>
+<div class="navbar-links" id="navbarLinks">
+<a href="/" class="nav-link">INICIO</a>
+<a href="/directorio.html" class="nav-link">DIRECTORIO ANIME</a>
+</div>
+<div class="navbar-search">
+<button class="search-button"><i class="fa-solid fa-search"></i></button>
+<input type="text" class="search-input" placeholder="Buscar...">
+</div>
+<button class="login-btn">LOGIN</button>
+</div>
+</nav>
 
-  <!-- MAIN CONTENT -->
-  <div class="player-container">
-    <!-- BREADCRUMB -->
-    <div class="breadcrumb">
-      <a href="/">Inicio</a> /
-      <a href="#" id="animeLink">Anime</a> /
-      <span id="episodeTitle">Episodio</span>
-    </div>
+<!-- MAIN CONTENT -->
+<div class="player-container">
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+<a href="/">Inicio</a> /
+<a href="#" id="animeLink">Anime</a> /
+<span id="episodeTitle">Episodio</span>
+</div>
 
-    <!-- TITULO Y SUBTÍTULO -->
-    <div class="player-header">
-      <h1 class="player-title" id="mainTitle">Cargando...</h1>
-      <p class="player-subtitle" id="mainSubtitle">Episodio -</p>
-    </div>
+<!-- TITULO Y SUBTÍTULO -->
+<div class="player-header">
+<h1 class="player-title" id="mainTitle">Cargando...</h1>
+<p class="player-subtitle" id="mainSubtitle">Episodio -</p>
+</div>
 
-    <!-- LAYOUT DE DOS COLUMNAS -->
-    <div class="player-layout">
+<!-- LAYOUT DE DOS COLUMNAS -->
+<div class="player-layout">
+<!-- ===== COLUMNA IZQUIERDA: PLAYER ===== -->
+<div class="player-main">
+<!-- TABS DE SERVIDORES -->
+<div class="servers-tabs" id="serversList">
+<span style="color:#666; font-size:12px; padding: 10px 0;">Cargando servidores...</span>
+</div>
 
-      <!-- ===== COLUMNA IZQUIERDA: PLAYER ===== -->
-      <div class="player-main">
+<!-- PLAYER -->
+<div class="player-wrapper" id="videoPlayer">
+<div class="player-placeholder">
+<i class="fas fa-play-circle"></i>
+<p>Selecciona un servidor para reproducir</p>
+</div>
+</div>
 
-        <!-- TABS DE SERVIDORES -->
-        <div class="servers-tabs" id="serversList">
-          <span style="color:#666; font-size:12px; padding: 10px 0;">Cargando servidores...</span>
+<!-- CONTROLES Y BOTONES -->
+<div class="player-controls">
+<div class="nav-buttons">
+<button class="btn" id="prevBtn" onclick="navigateEpisode(-1)">← ANTERIOR</button>
+<button class="btn btn-secondary" id="homeBtn" onclick="goToAnime()">◉ FICHA DEL ANIME</button>
+<button class="btn" id="nextBtn" onclick="navigateEpisode(1)">SIGUIENTE →</button>
+</div>
+<div class="nav-buttons">
+<button class="btn btn-secondary" onclick="reportEpisode()" title="Reportar problemas"><i class="fas fa-flag"></i> REPORTAR</button>
+<button class="btn btn-secondary" onclick="downloadEpisode()"><i class="fas fa-download"></i> DESCARGAR</button>
+</div>
+</div>
+
+<!-- INFORMACIÓN -->
+<div class="section-box">
+<div class="info-content">
+<div>
+<div class="section-title" style="margin-bottom: 10px;">📺 CALIDAD</div>
+<p style="color: #aaa; font-size: 12px;">Depende del servidor seleccionado</p>
+</div>
+</div>
+</div>
+
+<!-- DESCARGAS -->
+<div class="section-box">
+<div class="section-title">⬇ DESCARGAS</div>
+<table class="downloads-table">
+<thead>
+<tr>
+<th>SERVIDOR</th>
+<th>TAMAÑO</th>
+<th>FORMATO</th>
+<th>DESCARGAR</th>
+</tr>
+</thead>
+<tbody id="downloadsList">
+<tr><td colspan="4" style="text-align:center; color:#666;">Selecciona un servidor</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- COMPARTIR -->
+<div class="section-box">
+<div class="section-title">↗ COMPARTIR</div>
+<p style="color: #aaa; font-size: 12px; margin-bottom: 12px;">Ayuda a la web dándole like a nuestras redes sociales</p>
+<div class="share-buttons">
+<button class="share-btn" onclick="copyToClipboard()"><i class="fas fa-link"></i> Copiar Link</button>
+<button class="share-btn"><i class="fab fa-facebook"></i> Facebook</button>
+<button class="share-btn"><i class="fab fa-twitter"></i> Twitter</button>
+<button class="share-btn"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+</div>
+</div>
+
+<!-- COMENTARIOS -->
+<div class="section-box">
+<div class="section-title">💬 COMENTARIOS</div>
+<div class="comments-list">
+<div class="comment">
+<div class="comment-author">Usuario</div>
+<div class="comment-text">Excelente episodio! Gracias por subir tan rápido.</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== COLUMNA DERECHA: SIDEBAR ===== -->
+<div class="player-sidebar">
+<!-- REPRODUCIENDO AHORA -->
+<div class="now-playing-card">
+<img class="now-playing-thumb" id="sidebarThumb" src="" alt="" onerror="this.style.display='none'">
+<div class="now-playing-info">
+<div class="now-playing-label">REPRODUCIENDO</div>
+<div class="now-playing-title" id="sidebarEpLabel">Ep -</div>
+<div class="now-playing-sub" id="sidebarServerCount">- servidores</div>
+</div>
+</div>
+
+<!-- ANTERIOR / SIGUIENTE -->
+<div class="side-nav-buttons">
+<button class="btn" id="sidePrevBtn" onclick="navigateEpisode(-1)">‹ Anterior</button>
+<button class="btn" id="sideNextBtn" onclick="navigateEpisode(1)">Siguiente ›</button>
+</div>
+
+<!-- FICHA DEL ANIME -->
+<a href="#" class="sidebar-action-btn" id="fichaAnimeBtn">
+<i class="fas fa-list"></i> Ficha del anime
+</a>
+
+<!-- REPORTAR -->
+<button class="sidebar-action-btn btn-secondary-action" onclick="reportEpisode()">
+Reportar
+</button>
+
+<div class="sidebar-note">
+Si el video no carga, cambia de opción o reporta el episodio.
+</div>
+
+<!-- LISTA DE CAPÍTULOS -->
+<div class="chapters-box">
+<div class="chapters-header">
+<span class="chapters-header-title">Capítulos</span>
+<span class="chapters-count" id="chaptersCount">0</span>
+</div>
+<div class="chapters-list" id="chaptersList">
+<div class="chapters-empty">Cargando capítulos...</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+<div style="max-width: 1150px; margin: 0 auto;">
+<p style="margin-bottom: 12px; color: #ccc;">Anime Online - Ningún vídeo se encuentra alojado en nuestros servidores.</p>
+<div style="display: flex; gap: 20px; justify-content: center; font-size: 12px;">
+<a href="#" style="color: #fff; text-decoration: none;">Términos y Condiciones</a>
+<a href="#" style="color: #fff; text-decoration: none;">Política de Privacidad</a>
+<a href="#" style="color: #fff; text-decoration: none;">Sobre AnimeFLV</a>
+</div>
+</div>
+</footer>
+
+<script>
+const SUPABASE_URL = 'https://nwvmlgjstsfdlbwzdbsx.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53dm1sZ2pzdHNmZGxid3pkYnN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTUyNTYsImV4cCI6MjA5NzI3MTI1Nn0.mWSykvxeLxC437SLr4IPhnn2xdZKnHNszvd_7CnvbR8';
+const SUPABASE_HEADERS = {
+  'apikey': SUPABASE_KEY,
+  'Authorization': `Bearer ${SUPABASE_KEY}`,
+  'Content-Type': 'application/json'
+};
+
+function supabaseRequest(path, options = {}) {
+  const url = `${SUPABASE_URL}/rest/v1${path}`;
+  const headers = { ...SUPABASE_HEADERS, ...options.headers };
+  if (options.method && ['POST', 'PATCH'].includes(options.method)) {
+    headers['Prefer'] = 'return=representation';
+  }
+  return fetch(url, { ...options, headers }).then(r => r.json());
+}
+
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+let currentAnimeId = null;
+let currentAnimeSlug = null;
+let currentAnimeData = null;
+let currentEpisodeNumber = null;
+let allEpisodes = []; // [{id, numero, links, cover_image}]
+let currentServers = [];
+
+async function loadEpisodePage() {
+  // FIX: filtramos segmentos vacíos para que un "/" final (o dobles "//")
+  // no rompa el parseo del slug-episodio.
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  const rawSlugWithEp = pathParts[pathParts.length - 1];
+  const slugWithEp = rawSlugWithEp ? decodeURIComponent(rawSlugWithEp) : '';
+
+  if (!slugWithEp || !slugWithEp.includes('-')) {
+    alert('Episodio no encontrado');
+    window.location.href = '/';
+    return;
+  }
+
+  const parts = slugWithEp.split('-');
+  currentEpisodeNumber = parseInt(parts[parts.length - 1], 10);
+  const animeSlug = parts.slice(0, -1).join('-');
+  currentAnimeSlug = animeSlug;
+
+  if (isNaN(currentEpisodeNumber) || !animeSlug) {
+    alert('URL inválida');
+    window.location.href = '/';
+    return;
+  }
+
+  await loadAnimeDataBySlug(animeSlug);
+  if (currentAnimeId) {
+    await loadAllEpisodesForAnime();
+    await loadEpisodeServers();
+    renderChaptersList();
+    updateSidebarNowPlaying();
+    updateNavButtons();
+  }
+}
+
+async function loadAnimeDataBySlug(slug) {
+  try {
+    const allAnimes = await supabaseRequest('/animes?select=id,titulo,imagen,descripcion,tipo');
+    const animeData = allAnimes.find(anime => slugify(anime.titulo) === slug);
+
+    if (!animeData) {
+      alert('Anime no encontrado');
+      window.location.href = '/';
+      return;
+    }
+
+    currentAnimeId = animeData.id;
+    currentAnimeData = animeData;
+
+    document.getElementById('mainTitle').textContent = animeData.titulo;
+    document.getElementById('mainSubtitle').textContent = `Episodio ${currentEpisodeNumber}`;
+    document.getElementById('episodeTitle').textContent = `Episodio ${currentEpisodeNumber}`;
+    document.getElementById('animeLink').href = `/anime.html?slug=${slug}`;
+    document.getElementById('animeLink').textContent = animeData.titulo;
+    document.getElementById('fichaAnimeBtn').href = `/anime.html?slug=${slug}`;
+    document.title = `${animeData.titulo} - Episodio ${currentEpisodeNumber} - AnimeFLV`;
+  } catch (err) {
+    console.error('Error loading anime:', err);
+    alert('Error cargando anime');
+  }
+}
+
+async function loadAllEpisodesForAnime() {
+  try {
+    allEpisodes = await supabaseRequest(
+      `/episodios?anime_id=eq.${currentAnimeId}&select=id,numero,links,cover_image&order=numero.asc`
+    );
+  } catch (err) {
+    console.error('Error loading episode list:', err);
+    allEpisodes = [];
+  }
+}
+
+function getServersForEpisode(ep) {
+  if (!ep) return [];
+  const linksData = ep.links;
+  if (!linksData) return [];
+  if (Array.isArray(linksData)) return linksData;
+  if (typeof linksData === 'object') {
+    return Object.entries(linksData).map(([server, url]) => ({ server_name: server, url }));
+  }
+  return [];
+}
+
+async function loadEpisodeServers() {
+  const ep = allEpisodes.find(e => e.numero === currentEpisodeNumber);
+  if (ep) {
+    currentServers = getServersForEpisode(ep);
+    renderServers();
+  } else {
+    document.getElementById('serversList').innerHTML = '<span style="color:#666; font-size:12px;">No hay episodio disponible</span>';
+  }
+}
+
+function renderServers() {
+  const serversList = document.getElementById('serversList');
+  if (!currentServers || currentServers.length === 0) {
+    serversList.innerHTML = '<span style="color:#666; font-size:12px;">No hay servidores disponibles</span>';
+    return;
+  }
+  serversList.innerHTML = currentServers.map((server, i) => `
+    <button class="server-tab" onclick="selectServer(${i})">${server.server_name || `Servidor ${i + 1}`}</button>
+  `).join('');
+  // Seleccionar automáticamente el primer servidor
+  selectServer(0);
+}
+
+function selectServer(index) {
+  const server = currentServers[index];
+  if (!server) return;
+  const videoPlayer = document.getElementById('videoPlayer');
+  videoPlayer.innerHTML = '';
+  const newIframe = document.createElement('iframe');
+  newIframe.className = 'video-player';
+  newIframe.src = server.url;
+  newIframe.allowFullscreen = true;
+  newIframe.allow = 'fullscreen';
+  videoPlayer.appendChild(newIframe);
+
+  document.querySelectorAll('.server-tab').forEach((btn, i) => {
+    btn.classList.toggle('active', i === index);
+  });
+}
+
+function updateSidebarNowPlaying() {
+  const ep = allEpisodes.find(e => e.numero === currentEpisodeNumber);
+  const cover = (ep && ep.cover_image) || (currentAnimeData && currentAnimeData.imagen) || '';
+  const thumb = document.getElementById('sidebarThumb');
+  if (cover) {
+    thumb.src = cover;
+    thumb.style.display = 'block';
+  } else {
+    thumb.style.display = 'none';
+  }
+  document.getElementById('sidebarEpLabel').textContent = `Ep ${currentEpisodeNumber}`;
+  const serverCount = currentServers.length;
+  document.getElementById('sidebarServerCount').textContent = `${serverCount} servidor${serverCount !== 1 ? 'es' : ''}`;
+}
+
+function renderChaptersList() {
+  const list = document.getElementById('chaptersList');
+  const countEl = document.getElementById('chaptersCount');
+  countEl.textContent = allEpisodes.length;
+
+  if (!allEpisodes || allEpisodes.length === 0) {
+    list.innerHTML = '<div class="chapters-empty">No hay capítulos disponibles</div>';
+    return;
+  }
+
+  const fallbackCover = (currentAnimeData && currentAnimeData.imagen) || '';
+  // Mostrar del más reciente al más antiguo, igual que catálogos clásicos
+  const sorted = [...allEpisodes].sort((a, b) => b.numero - a.numero);
+
+  list.innerHTML = sorted.map(ep => {
+    const servers = getServersForEpisode(ep);
+    const cover = ep.cover_image || fallbackCover;
+    const isActive = ep.numero === currentEpisodeNumber;
+    return `
+      <a href="/ver/${currentAnimeSlug}-${ep.numero}" class="chapter-item ${isActive ? 'active' : ''}">
+        ${cover ? `<img class="chapter-thumb" src="${cover}" alt="Ep ${ep.numero}" onerror="this.style.display='none'">` : ''}
+        <div class="chapter-info">
+          <div class="chapter-ep-title">Ep ${ep.numero}</div>
+          <div class="chapter-servers-count">${servers.length} servidor${servers.length !== 1 ? 'es' : ''}</div>
         </div>
+      </a>
+    `;
+  }).join('');
 
-        <!-- PLAYER -->
-        <div class="player-wrapper" id="videoPlayer">
-          <div class="player-placeholder">
-            <i class="fas fa-play-circle"></i>
-            <p>Selecciona un servidor para reproducir</p>
-          </div>
-        </div>
+  // Centrar visualmente el capítulo activo dentro del scroll
+  const activeEl = list.querySelector('.chapter-item.active');
+  if (activeEl) {
+    activeEl.scrollIntoView({ block: 'center' });
+  }
+}
 
-        <!-- CONTROLES Y BOTONES -->
-        <div class="player-controls">
-          <div class="nav-buttons">
-            <button class="btn" id="prevBtn" onclick="navigateEpisode(-1)">← ANTERIOR</button>
-            <button class="btn btn-secondary" id="homeBtn" onclick="goToAnime()">◉ FICHA DEL ANIME</button>
-            <button class="btn" id="nextBtn" onclick="navigateEpisode(1)">SIGUIENTE →</button>
-          </div>
-          <div class="nav-buttons">
-            <button class="btn btn-secondary" onclick="reportEpisode()" title="Reportar problemas"><i class="fas fa-flag"></i> REPORTAR</button>
-            <button class="btn btn-secondary" onclick="downloadEpisode()"><i class="fas fa-download"></i> DESCARGAR</button>
-          </div>
-        </div>
+function updateNavButtons() {
+  const epNumbers = allEpisodes.map(e => e.numero).sort((a, b) => a - b);
+  const prevEp = [...epNumbers].reverse().find(n => n < currentEpisodeNumber);
+  const nextEp = epNumbers.find(n => n > currentEpisodeNumber);
 
-        <!-- INFORMACIÓN -->
-        <div class="section-box">
-          <div class="info-content">
-            <div>
-              <div class="section-title" style="margin-bottom: 10px;">📺 CALIDAD</div>
-              <p style="color: #aaa; font-size: 12px;">Depende del servidor seleccionado</p>
-            </div>
-          </div>
-        </div>
+  ['prevBtn', 'sidePrevBtn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = !prevEp;
+  });
+  ['nextBtn', 'sideNextBtn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = !nextEp;
+  });
+}
 
-        <!-- DESCARGAS -->
-        <div class="section-box">
-          <div class="section-title">⬇ DESCARGAS</div>
-          <table class="downloads-table">
-            <thead>
-              <tr>
-                <th>SERVIDOR</th>
-                <th>TAMAÑO</th>
-                <th>FORMATO</th>
-                <th>DESCARGAR</th>
-              </tr>
-            </thead>
-            <tbody id="downloadsList">
-              <tr><td colspan="4" style="text-align:center; color:#666;">Selecciona un servidor</td></tr>
-            </tbody>
-          </table>
-        </div>
+function navigateEpisode(direction) {
+  const epNumbers = allEpisodes.map(e => e.numero).sort((a, b) => a - b);
+  let targetEp;
+  if (direction > 0) {
+    targetEp = epNumbers.find(n => n > currentEpisodeNumber);
+  } else {
+    targetEp = [...epNumbers].reverse().find(n => n < currentEpisodeNumber);
+  }
+  if (targetEp) {
+    window.location.href = `/ver/${currentAnimeSlug}-${targetEp}`;
+  }
+}
 
-        <!-- COMPARTIR -->
-        <div class="section-box">
-          <div class="section-title">↗ COMPARTIR</div>
-          <p style="color: #aaa; font-size: 12px; margin-bottom: 12px;">Ayuda a la web dándole like a nuestras redes sociales</p>
-          <div class="share-buttons">
-            <button class="share-btn" onclick="copyToClipboard()"><i class="fas fa-link"></i> Copiar Link</button>
-            <button class="share-btn"><i class="fab fa-facebook"></i> Facebook</button>
-            <button class="share-btn"><i class="fab fa-twitter"></i> Twitter</button>
-            <button class="share-btn"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-          </div>
-        </div>
+function goToAnime() {
+  window.location.href = `/anime.html?slug=${currentAnimeSlug}`;
+}
 
-        <!-- COMENTARIOS -->
-        <div class="section-box">
-          <div class="section-title">💬 COMENTARIOS</div>
-          <div class="comments-list">
-            <div class="comment">
-              <div class="comment-author">Usuario</div>
-              <div class="comment-text">Excelente episodio! Gracias por subir tan rápido.</div>
-            </div>
-          </div>
-        </div>
+function reportEpisode() {
+  alert('Función de reporte disponible próximamente');
+}
 
-      </div>
+function downloadEpisode() {
+  alert('Función de descarga disponible próximamente');
+}
 
-      <!-- ===== COLUMNA DERECHA: SIDEBAR ===== -->
-      <div class="player-sidebar">
+function copyToClipboard() {
+  navigator.clipboard.writeText(window.location.href);
+  alert('Link copiado al portapapeles');
+}
 
-        <!-- REPRODUCIENDO AHORA -->
-        <div class="now-playing-card">
-          <img class="now-playing-thumb" id="sidebarThumb" src="" alt="" onerror="this.style.display='none'">
-          <div class="now-playing-info">
-            <div class="now-playing-label">REPRODUCIENDO</div>
-            <div class="now-playing-title" id="sidebarEpLabel">Ep -</div>
-            <div class="now-playing-sub" id="sidebarServerCount">- servidores</div>
-          </div>
-        </div>
-
-        <!-- ANTERIOR / SIGUIENTE -->
-        <div class="side-nav-buttons">
-          <button class="btn" id="sidePrevBtn" onclick="navigateEpisode(-1)">‹ Anterior</button>
-          <button class="btn" id="sideNextBtn" onclick="navigateEpisode(1)">Siguiente ›</button>
-        </div>
-
-        <!-- FICHA DEL ANIME -->
-        <a href="#" class="sidebar-action-btn" id="fichaAnimeBtn">
-          <i class="fas fa-list"></i> Ficha del anime
-        </a>
-
-        <!-- REPORTAR -->
-        <button class="sidebar-action-btn btn-secondary-action" onclick="reportEpisode()">
-          Reportar
-        </button>
-
-        <div class="sidebar-note">
-          Si el video no carga, cambia de opción o reporta el episodio.
-        </div>
-
-        <!-- LISTA DE CAPÍTULOS -->
-        <div class="chapters-box">
-          <div class="chapters-header">
-            <span class="chapters-header-title">Capítulos</span>
-            <span class="chapters-count" id="chaptersCount">0</span>
-          </div>
-          <div class="chapters-list" id="chaptersList">
-            <div class="chapters-empty">Cargando capítulos...</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div style="max-width: 1150px; margin: 0 auto;">
-      <p style="margin-bottom: 12px; color: #ccc;">Anime Online - Ningún vídeo se encuentra alojado en nuestros servidores.</p>
-      <div style="display: flex; gap: 20px; justify-content: center; font-size: 12px;">
-        <a href="#" style="color: #fff; text-decoration: none;">Términos y Condiciones</a>
-        <a href="#" style="color: #fff; text-decoration: none;">Política de Privacidad</a>
-        <a href="#" style="color: #fff; text-decoration: none;">Sobre AnimeFLV</a>
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    const SUPABASE_URL = 'https://nwvmlgjstsfdlbwzdbsx.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53dm1sZ2pzdHNmZGxid3pkYnN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTUyNTYsImV4cCI6MjA5NzI3MTI1Nn0.mWSykvxeLxC437SLr4IPhnn2xdZKnHNszvd_7CnvbR8';
-    const SUPABASE_HEADERS = {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json'
-    };
-
-    function supabaseRequest(path, options = {}) {
-      const url = `${SUPABASE_URL}/rest/v1${path}`;
-      const headers = { ...SUPABASE_HEADERS, ...options.headers };
-      if (options.method && ['POST', 'PATCH'].includes(options.method)) {
-        headers['Prefer'] = 'return=representation';
-      }
-      return fetch(url, { ...options, headers }).then(r => r.json());
-    }
-
-    function slugify(text) {
-      return text
-        .toLowerCase()
-        .trim()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-+|-+$/g, '');
-    }
-
-    let currentAnimeId = null;
-    let currentAnimeSlug = null;
-    let currentAnimeData = null;
-    let currentEpisodeNumber = null;
-    let allEpisodes = []; // [{id, numero, links, cover_image}]
-    let currentServers = [];
-
-    async function loadEpisodePage() {
-      const pathParts = window.location.pathname.split('/');
-      const slugWithEp = pathParts[pathParts.length - 1];
-
-      if (!slugWithEp || !slugWithEp.includes('-')) {
-        alert('Episodio no encontrado');
-        window.location.href = '/';
-        return;
-      }
-
-      const parts = slugWithEp.split('-');
-      currentEpisodeNumber = parseInt(parts[parts.length - 1]);
-      const animeSlug = parts.slice(0, -1).join('-');
-      currentAnimeSlug = animeSlug;
-
-      if (isNaN(currentEpisodeNumber) || !animeSlug) {
-        alert('URL inválida');
-        window.location.href = '/';
-        return;
-      }
-
-      await loadAnimeDataBySlug(animeSlug);
-      if (currentAnimeId) {
-        await loadAllEpisodesForAnime();
-        await loadEpisodeServers();
-        renderChaptersList();
-        updateSidebarNowPlaying();
-        updateNavButtons();
-      }
-    }
-
-    async function loadAnimeDataBySlug(slug) {
-      try {
-        const allAnimes = await supabaseRequest('/animes?select=id,titulo,imagen,descripcion,tipo');
-        const animeData = allAnimes.find(anime => slugify(anime.titulo) === slug);
-
-        if (!animeData) {
-          alert('Anime no encontrado');
-          window.location.href = '/';
-          return;
-        }
-
-        currentAnimeId = animeData.id;
-        currentAnimeData = animeData;
-
-        document.getElementById('mainTitle').textContent = animeData.titulo;
-        document.getElementById('mainSubtitle').textContent = `Episodio ${currentEpisodeNumber}`;
-        document.getElementById('episodeTitle').textContent = `Episodio ${currentEpisodeNumber}`;
-        document.getElementById('animeLink').href = `/anime.html?slug=${slug}`;
-        document.getElementById('animeLink').textContent = animeData.titulo;
-        document.getElementById('fichaAnimeBtn').href = `/anime.html?slug=${slug}`;
-        document.title = `${animeData.titulo} - Episodio ${currentEpisodeNumber} - AnimeFLV`;
-      } catch (err) {
-        console.error('Error loading anime:', err);
-        alert('Error cargando anime');
-      }
-    }
-
-    async function loadAllEpisodesForAnime() {
-      try {
-        allEpisodes = await supabaseRequest(
-          `/episodios?anime_id=eq.${currentAnimeId}&select=id,numero,links,cover_image&order=numero.asc`
-        );
-      } catch (err) {
-        console.error('Error loading episode list:', err);
-        allEpisodes = [];
-      }
-    }
-
-    function getServersForEpisode(ep) {
-      if (!ep) return [];
-      const linksData = ep.links;
-      if (!linksData) return [];
-      if (Array.isArray(linksData)) return linksData;
-      if (typeof linksData === 'object') {
-        return Object.entries(linksData).map(([server, url]) => ({ server_name: server, url }));
-      }
-      return [];
-    }
-
-    async function loadEpisodeServers() {
-      const ep = allEpisodes.find(e => e.numero === currentEpisodeNumber);
-      if (ep) {
-        currentServers = getServersForEpisode(ep);
-        renderServers();
-      } else {
-        document.getElementById('serversList').innerHTML = '<span style="color:#666; font-size:12px;">No hay episodio disponible</span>';
-      }
-    }
-
-    function renderServers() {
-      const serversList = document.getElementById('serversList');
-      if (!currentServers || currentServers.length === 0) {
-        serversList.innerHTML = '<span style="color:#666; font-size:12px;">No hay servidores disponibles</span>';
-        return;
-      }
-
-      serversList.innerHTML = currentServers.map((server, i) => `
-        <button class="server-tab" onclick="selectServer(${i})">${server.server_name || `Servidor ${i + 1}`}</button>
-      `).join('');
-
-      // Seleccionar automáticamente el primer servidor
-      selectServer(0);
-    }
-
-    function selectServer(index) {
-      const server = currentServers[index];
-      if (!server) return;
-      const videoPlayer = document.getElementById('videoPlayer');
-
-      videoPlayer.innerHTML = '';
-      const newIframe = document.createElement('iframe');
-      newIframe.className = 'video-player';
-      newIframe.src = server.url;
-      newIframe.allowFullscreen = true;
-      newIframe.allow = 'fullscreen';
-      videoPlayer.appendChild(newIframe);
-
-      document.querySelectorAll('.server-tab').forEach((btn, i) => {
-        btn.classList.toggle('active', i === index);
-      });
-    }
-
-    function updateSidebarNowPlaying() {
-      const ep = allEpisodes.find(e => e.numero === currentEpisodeNumber);
-      const cover = (ep && ep.cover_image) || (currentAnimeData && currentAnimeData.imagen) || '';
-      const thumb = document.getElementById('sidebarThumb');
-      if (cover) {
-        thumb.src = cover;
-        thumb.style.display = 'block';
-      } else {
-        thumb.style.display = 'none';
-      }
-      document.getElementById('sidebarEpLabel').textContent = `Ep ${currentEpisodeNumber}`;
-      const serverCount = currentServers.length;
-      document.getElementById('sidebarServerCount').textContent = `${serverCount} servidor${serverCount !== 1 ? 'es' : ''}`;
-    }
-
-    function renderChaptersList() {
-      const list = document.getElementById('chaptersList');
-      const countEl = document.getElementById('chaptersCount');
-      countEl.textContent = allEpisodes.length;
-
-      if (!allEpisodes || allEpisodes.length === 0) {
-        list.innerHTML = '<div class="chapters-empty">No hay capítulos disponibles</div>';
-        return;
-      }
-
-      const fallbackCover = (currentAnimeData && currentAnimeData.imagen) || '';
-
-      // Mostrar del más reciente al más antiguo, igual que catálogos clásicos
-      const sorted = [...allEpisodes].sort((a, b) => b.numero - a.numero);
-
-      list.innerHTML = sorted.map(ep => {
-        const servers = getServersForEpisode(ep);
-        const cover = ep.cover_image || fallbackCover;
-        const isActive = ep.numero === currentEpisodeNumber;
-        return `
-          <a href="/ver/${currentAnimeSlug}-${ep.numero}" class="chapter-item ${isActive ? 'active' : ''}">
-            ${cover ? `<img class="chapter-thumb" src="${cover}" alt="Ep ${ep.numero}" onerror="this.style.display='none'">` : ''}
-            <div class="chapter-info">
-              <div class="chapter-ep-title">Ep ${ep.numero}</div>
-              <div class="chapter-servers-count">${servers.length} servidor${servers.length !== 1 ? 'es' : ''}</div>
-            </div>
-          </a>
-        `;
-      }).join('');
-
-      // Centrar visualmente el capítulo activo dentro del scroll
-      const activeEl = list.querySelector('.chapter-item.active');
-      if (activeEl) {
-        activeEl.scrollIntoView({ block: 'center' });
-      }
-    }
-
-    function updateNavButtons() {
-      const epNumbers = allEpisodes.map(e => e.numero).sort((a, b) => a - b);
-      const prevEp = [...epNumbers].reverse().find(n => n < currentEpisodeNumber);
-      const nextEp = epNumbers.find(n => n > currentEpisodeNumber);
-
-      ['prevBtn', 'sidePrevBtn'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.disabled = !prevEp;
-      });
-      ['nextBtn', 'sideNextBtn'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.disabled = !nextEp;
-      });
-    }
-
-    function navigateEpisode(direction) {
-      const epNumbers = allEpisodes.map(e => e.numero).sort((a, b) => a - b);
-      let targetEp;
-
-      if (direction > 0) {
-        targetEp = epNumbers.find(n => n > currentEpisodeNumber);
-      } else {
-        targetEp = [...epNumbers].reverse().find(n => n < currentEpisodeNumber);
-      }
-
-      if (targetEp) {
-        window.location.href = `/ver/${currentAnimeSlug}-${targetEp}`;
-      }
-    }
-
-    function goToAnime() {
-      window.location.href = `/anime.html?slug=${currentAnimeSlug}`;
-    }
-
-    function reportEpisode() {
-      alert('Función de reporte disponible próximamente');
-    }
-
-    function downloadEpisode() {
-      alert('Función de descarga disponible próximamente');
-    }
-
-    function copyToClipboard() {
-      navigator.clipboard.writeText(window.location.href);
-      alert('Link copiado al portapapeles');
-    }
-
-    document.addEventListener('DOMContentLoaded', loadEpisodePage);
-  </script>
+document.addEventListener('DOMContentLoaded', loadEpisodePage);
+</script>
 </body>
 </html>
