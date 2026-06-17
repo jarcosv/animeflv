@@ -187,9 +187,9 @@ body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSys
     // Load episodes from Supabase
     async function loadEpisodes() {
       try {
-        // Obtener últimos episodios con sus animes
+        // Obtener últimos episodios (sin limite)
         const episodes = await supabaseRequest(
-          "/episodios?select=id,numero,titulo,cover_image,created_at,anime_id&order=created_at.desc&limit=12"
+          "/episodios?select=id,numero,titulo,cover_image,created_at,anime_id&order=created_at.desc"
         );
         
         if (!episodes || episodes.length === 0) {
@@ -201,8 +201,21 @@ body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSys
         const allAnimes = await supabaseRequest("/animes?select=id,titulo,imagen");
         const animeMap = new Map(allAnimes.map(a => [a.id, a]));
 
+        // Agrupar por anime y tomar solo el más reciente de cada uno
+        const animeLatestEp = new Map();
+        for (const ep of episodes) {
+          if (!animeLatestEp.has(ep.anime_id)) {
+            animeLatestEp.set(ep.anime_id, ep);
+          }
+        }
+
+        // Convertir a array y ordenar por created_at (más reciente primero)
+        const latestEpisodes = Array.from(animeLatestEp.values())
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 12); // Tomar los 12 animes más recientes
+
         const grid = document.getElementById('episodesGrid');
-        grid.innerHTML = episodes.map((ep, i) => {
+        grid.innerHTML = latestEpisodes.map((ep, i) => {
           const anime = animeMap.get(ep.anime_id);
           const coverImage = ep.cover_image || anime?.imagen || '/placeholder.png';
           const title = `${anime?.titulo || 'Anime'} - Ep ${ep.numero}`;
