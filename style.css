@@ -3099,6 +3099,7 @@ footer .footer-note {
 }
 
 .social-strip {
+  display: none !important;
   background: var(--flv-bg-deep);
   border-bottom: 1px solid var(--flv-line-soft);
   padding: 10px 20px;

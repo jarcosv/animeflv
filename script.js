@@ -130,10 +130,10 @@ function updateHomeSEO() {
   setMeta('meta[property="og:title"]', HOME_TITLE, { property: 'og:title' });
   setMeta('meta[property="og:description"]', HOME_DESCRIPTION, { property: 'og:description' });
   setMeta('meta[property="og:url"]', SITE_URL, { property: 'og:url' });
-  setMeta('meta[property="og:image"]', `${SITE_URL}images/logo.png`, { property: 'og:image' });
+  setMeta('meta[property="og:image"]', `${SITE_URL}image.png`, { property: 'og:image' });
   setMeta('meta[name="twitter:title"]', HOME_TITLE, { name: 'twitter:title' });
   setMeta('meta[name="twitter:description"]', HOME_DESCRIPTION, { name: 'twitter:description' });
-  setMeta('meta[name="twitter:image"]', `${SITE_URL}images/logo.png`, { name: 'twitter:image' });
+  setMeta('meta[name="twitter:image"]', `${SITE_URL}image.png`, { name: 'twitter:image' });
 }
 
 function getSocialNetwork(url) {
