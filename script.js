@@ -20,8 +20,8 @@ const SUPABASE_HEADERS = {
 };
 const SITE_URL = 'https://animeflv.lat/';
 const SITE_NAME = 'AnimeFLV';
-const HOME_TITLE = 'AnimeFLV - Ver Animes Online en Latino';
-const HOME_DESCRIPTION = 'AnimeFLV: mira animes online en latino, estrenos, episodios recientes, series completas y populares en un solo directorio.';
+const HOME_TITLE = 'Ver Anime Online HD en Español Latino - AnimeFLV';
+const HOME_DESCRIPTION = 'AnimeFLV te permite ver anime online en HD y español latino. Disfruta últimos episodios, animes en emisión, estrenos, series populares y directorio anime actualizado.';
 let socialIntroText = '';
 let socialLinks = [];
 let carouselLoaded = false;
@@ -127,6 +127,7 @@ function updateHomeSEO() {
   document.title = HOME_TITLE;
   setCanonical(SITE_URL);
   setMeta('meta[name="description"]', HOME_DESCRIPTION, { name: 'description' });
+  setMeta('meta[name="keywords"]', 'anime online, ver anime online, anime latino, anime HD, anime gratis, ultimos episodios, animes en emision, directorio anime, AnimeFLV', { name: 'keywords' });
   setMeta('meta[property="og:title"]', HOME_TITLE, { property: 'og:title' });
   setMeta('meta[property="og:description"]', HOME_DESCRIPTION, { property: 'og:description' });
   setMeta('meta[property="og:url"]', SITE_URL, { property: 'og:url' });
@@ -234,8 +235,8 @@ function renderSocialStrip() {
 }
 
 function updateAnimeSEO(index, anime) {
-  const title = `${anime.titulo} - Ver Anime Online en Latino | ${SITE_NAME}`;
-  const description = `${anime.titulo}: mira sus episodios online en latino en AnimeFLV. ${anime.descripcion || 'Encuentra estrenos, capitulos recientes y animes completos.'}`.slice(0, 155);
+  const title = `${anime.titulo} - Ver Anime Online HD en Latino | ${SITE_NAME}`;
+  const description = `${anime.titulo}: ver anime online en HD y español latino en AnimeFLV. ${anime.descripcion || 'Episodios recientes, estrenos, animes en emisión y series completas.'}`.slice(0, 155);
   const url = toAbsoluteUrl(getAnimeUrl(anime, index));
   const image = toAbsoluteUrl(safeImageUrl(anime.imagen));
 
@@ -712,7 +713,7 @@ function renderHome(titleText = 'Últimos episodios') {
   const main = document.querySelector('main');
   if (!main) return;
   main.innerHTML = `
-    <h1 class="sr-only">AnimeFLV - Ver animes online en latino</h1>
+    <h1 class="sr-only">AnimeFLV - Ver anime online HD en español latino</h1>
     <div class="animeflv-layout">
       <aside class="home-sidebar" aria-label="Animes en emisión">
         <div class="home-sidebar-title">ANIMES EN EMISIÓN</div>

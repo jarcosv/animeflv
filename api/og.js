@@ -5,8 +5,8 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://vanmxvfhagqfbwynpwzt.s
 const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_publishable_c4fIwf42U_W18zJH2RkS1w_1UB2PeZO';
 const SITE_URL = 'https://animeflv.lat';
 const SITE_NAME = 'AnimeFLV';
-const DEFAULT_TITLE = 'AnimeFLV - Ver Animes Online en Latino';
-const DEFAULT_DESCRIPTION = 'AnimeFLV: mira animes online en latino, estrenos, episodios recientes, series completas y populares en un solo directorio.';
+const DEFAULT_TITLE = 'Ver Anime Online HD en Español Latino - AnimeFLV';
+const DEFAULT_DESCRIPTION = 'AnimeFLV te permite ver anime online en HD y español latino. Disfruta últimos episodios, animes en emisión, estrenos, series populares y directorio anime actualizado.';
 const DEFAULT_IMAGE = `${SITE_URL}/image.png`;
 
 let indexHtmlCache = null;
@@ -168,9 +168,9 @@ async function buildMeta(query) {
     const anime = await findAnimeBySlug(String(query.slug));
     if (anime) {
       const url = `${SITE_URL}/anime/${encodeURIComponent(anime.slug)}`;
-      const description = `${anime.title}: mira sus episodios online en latino en ${SITE_NAME}. ${anime.description || 'Encuentra capitulos recientes y animes completos.'}`;
+      const description = `${anime.title}: ver anime online en HD y español latino en ${SITE_NAME}. ${anime.description || 'Episodios recientes, estrenos, animes en emision y series completas.'}`;
       return {
-        title: `${anime.title} - Ver Anime Online en Latino | ${SITE_NAME}`,
+        title: `${anime.title} - Ver Anime Online HD en Latino | ${SITE_NAME}`,
         description,
         url,
         image: anime.image,
@@ -199,9 +199,9 @@ async function buildMeta(query) {
       const chapter = await findChapter(anime.title, chapterNumber);
       const image = chapter?.cover_image || anime.image;
       const url = `${SITE_URL}/ver/${encodeURIComponent(slug)}-episodio-${encodeURIComponent(chapterNumber)}`;
-      const description = `Mira ${anime.title} episodio ${chapterNumber} online en latino en ${SITE_NAME}.`;
+      const description = `Mira ${anime.title} episodio ${chapterNumber} online en HD y español latino en ${SITE_NAME}.`;
       return {
-        title: `${anime.title} Episodio ${chapterNumber} - Ver Online | ${SITE_NAME}`,
+        title: `${anime.title} Episodio ${chapterNumber} - Ver Online HD | ${SITE_NAME}`,
         description,
         url,
         image,
