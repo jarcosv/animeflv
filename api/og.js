@@ -197,7 +197,7 @@ async function buildMeta(query) {
 
     if (anime) {
       const chapter = await findChapter(anime.title, chapterNumber);
-      const image = chapter?.cover_image || anime.image;
+      const image = anime.image;
       const url = `${SITE_URL}/ver/${encodeURIComponent(slug)}-episodio-${encodeURIComponent(chapterNumber)}`;
       const description = `Mira ${anime.title} episodio ${chapterNumber} online en HD y español latino en ${SITE_NAME}.`;
       return {
