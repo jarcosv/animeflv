@@ -5,11 +5,11 @@
   "rewrites": [
     {
       "source": "/anime/:slug",
-      "destination": "/index.html"
+      "destination": "/api/og?type=anime&slug=:slug"
     },
     {
       "source": "/ver/:episode",
-      "destination": "/index.html"
+      "destination": "/api/og?type=watch&episode=:episode"
     }
   ],
   "headers": [
