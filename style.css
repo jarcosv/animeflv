@@ -3669,6 +3669,37 @@ footer {
 }
 
 /* Final AnimeFLV layout pass */
+.site-hero {
+  width: min(1140px, calc(100% - 40px));
+  min-height: 54px;
+  display: grid;
+  place-items: center;
+  margin: 20px auto 0;
+  padding: 8px 20px;
+  overflow: hidden;
+  border-radius: 8px;
+  border-bottom: 3px solid var(--flv-accent);
+  background:
+    linear-gradient(135deg, rgba(20, 24, 27, 0.84), rgba(20, 24, 27, 0.84)),
+    url("/bane.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+.site-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.15rem, 2.2vw, 1.55rem);
+  font-weight: 400;
+  line-height: 1.25;
+  text-align: center;
+  letter-spacing: 0;
+}
+
+.site-hero strong {
+  font-weight: 800;
+}
+
 .banner-carousel {
   display: none !important;
   height: 62px;
@@ -3906,6 +3937,17 @@ main,
 }
 
 @media (max-width: 640px) {
+  .site-hero {
+    width: calc(100% - 20px);
+    min-height: 50px;
+    margin-top: 14px;
+    padding: 8px 12px;
+  }
+
+  .site-hero h1 {
+    font-size: 1rem;
+  }
+
   .banner-carousel {
     height: 56px;
     width: calc(100% - 20px);
