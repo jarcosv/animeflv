@@ -2786,7 +2786,7 @@ body,
 
 header,
 .admin-page header {
-  position: sticky;
+  position: relative;
   top: 0;
   z-index: 1000;
   display: grid;
