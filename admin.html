@@ -3,305 +3,379 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - AnimeFLV</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; padding: 30px 20px; }
-    
-    .container { max-width: 900px; margin: 0 auto; }
-    
-    h1 { font-size: 28px; font-weight: 600; margin-bottom: 10px; color: #0ea5e9; }
-    .subtitle { color: #aaa; margin-bottom: 30px; font-size: 14px; }
-    
-    .section { background: #242424; padding: 25px; border-radius: 8px; margin-bottom: 20px; }
-    .section-title { font-size: 16px; font-weight: 600; color: #0ea5e9; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #333; }
-    
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 12px; font-weight: 600; color: #aaa; margin-bottom: 8px; }
-    
-    textarea { 
-      width: 100%; 
-      min-height: 300px; 
-      padding: 15px; 
-      background: #1a1a1a; 
-      border: 1px solid #333; 
-      color: #fff; 
-      border-radius: 4px; 
-      font-family: 'Courier New', monospace; 
-      font-size: 12px;
-      resize: vertical;
-    }
-    
-    textarea:focus { outline: 0; border-color: #0ea5e9; }
-    
-    .help-text { font-size: 11px; color: #666; margin-top: 8px; line-height: 1.5; }
-    
-    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
-    
-    .btn { 
-      padding: 10px 20px; 
-      border: 0; 
-      border-radius: 4px; 
-      cursor: pointer; 
-      font-size: 12px; 
-      font-weight: 600; 
-      transition: background 0.2s;
-    }
-    
-    .btn-primary { background: #0ea5e9; color: #fff; }
-    .btn-primary:hover { background: #06b6d4; }
-    .btn-primary:disabled { background: #555; cursor: not-allowed; }
-    
-    .btn-secondary { background: #333; color: #fff; }
-    .btn-secondary:hover { background: #444; }
-    
-    .preview { background: #1a1a1a; padding: 15px; border-radius: 4px; margin-top: 20px; border-left: 3px solid #0ea5e9; }
-    .preview-title { color: #0ea5e9; font-weight: 600; margin-bottom: 10px; }
-    .preview-item { padding: 10px; background: #242424; border-radius: 3px; margin-bottom: 8px; font-size: 11px; }
-    .preview-item strong { color: #0ea5e9; }
-    
-    .alert { padding: 15px; border-radius: 4px; margin-top: 15px; font-size: 12px; }
-    .alert-success { background: #064e3b; color: #86efac; border-left: 3px solid #16a34a; }
-    .alert-error { background: #7f1d1d; color: #fca5a5; border-left: 3px solid #dc2626; }
-    .alert-info { background: #0c4a6e; color: #7dd3fc; border-left: 3px solid #0ea5e9; }
-    
-    .format-example {
-      background: #1a1a1a;
-      padding: 15px;
-      border-radius: 4px;
-      margin-bottom: 15px;
-      border-left: 3px solid #666;
-      font-size: 11px;
-      font-family: 'Courier New', monospace;
-      overflow-x: auto;
-      color: #aaa;
-      line-height: 1.4;
-    }
-    
-    @media (max-width: 768px) {
-      body { padding: 15px 10px; }
-      .btn-group { flex-direction: column; }
-      .btn { width: 100%; }
-    }
-  </style>
+  <title>AnimeFLV - Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="/images/logopro.png">
+  <link rel="stylesheet" href="/style.css?v=animeflv-skin-1">
 </head>
-<body>
-  <div class="container">
-    <h1>🎌 Importador de Animes</h1>
-    <p class="subtitle">Importa episodios masivos desde paquetes JSON</p>
+<body class="admin-page">
+  <header>
+    <div class="header-top">
+      <a href="/" class="site-logo">
+        <img src="/images/logo.png" alt="Logo AnimeFLV" onerror="this.style.display='none'">
+      </a>
+      <p class="tagline">Panel de capitulos</p>
+      <div class="user-actions">
+        <a href="/" class="auth-btn">Ver sitio</a>
+      </div>
+    </div>
+  </header>
 
-    <div class="section">
-      <div class="section-title">📥 Importar Episodios Masivos</div>
-      
-      <div class="format-example">
-        <strong>Formato JSON esperado:</strong><br><br>
-Titulo del Anime<br><br>
-{"import_type":"bulk_package","anime_cover":"https://...jpg","chapters":[<br>
-{"chapter_number":1,"server_name":"Servidor1","embed_url":"https://..."},<br>
-{"chapter_number":2,"server_name":"Servidor1","embed_url":"https://..."}<br>
-]}
+  <main class="admin-main">
+    <section id="admin-lock" class="admin-panel">
+      <h1>Admin</h1>
+      <div class="admin-form">
+        <label for="admin-email">Email</label>
+        <input id="admin-email" type="email" autocomplete="username">
+
+        <label for="admin-password">Contraseña</label>
+        <input id="admin-password" type="password" autocomplete="current-password">
+        <button id="unlock-admin">Entrar</button>
+      </div>
+      <p id="lock-message" class="admin-message"></p>
+    </section>
+
+    <section id="admin-content" class="admin-panel hidden">
+      <div class="admin-head">
+        <div>
+          <h1>Panel admin</h1>
+          <p>Crea animes y sube episodios sin tocar el codigo.</p>
+        </div>
+        <button id="lock-admin" class="auth-btn">Bloquear</button>
       </div>
 
-      <form id="bulkImportForm">
-        <div class="form-group">
-          <label for="jsonInput">Pega aquí el título del anime y el JSON:</label>
-          <textarea id="jsonInput" placeholder="Título del anime&#10;&#10;{&quot;import_type&quot;:&quot;bulk_package&quot;,&quot;anime_cover&quot;:&quot;https://...jpg&quot;,&quot;chapters&quot;:[{&quot;chapter_number&quot;:1,&quot;server_name&quot;:&quot;SW&quot;,&quot;embed_url&quot;:&quot;https://...&quot;}]}"></textarea>
-          
-          <p class="help-text">
-            ✓ El importador detecta portada del anime con <strong>anime_cover</strong> o <strong>image_url</strong><br>
-            ✓ Si un anime no existe, se crea automáticamente<br>
-            ✓ Soporta múltiples servidores por episodio<br>
-            ✓ Se deduplican episodios automáticamente
-          </p>
-        </div>
+      <div class="admin-section">
+        <h2>Redes y aviso superior</h2>
+        <form id="social-intro-form" class="admin-form">
+          <label for="social-intro-text">Texto corto</label>
+          <textarea id="social-intro-text" rows="2" maxlength="180" placeholder="Ej: Sigueme para avisos, estrenos y novedades"></textarea>
+          <button type="submit">Guardar texto</button>
+        </form>
 
-        <div class="btn-group">
-          <button type="button" class="btn btn-secondary" onclick="analyzeImport()">
-            <i class="fas fa-search"></i> Analizar
-          </button>
-          <button type="submit" class="btn btn-primary" id="importBtn" disabled>
-            <i class="fas fa-upload"></i> Importar Episodios
-          </button>
-          <button type="button" class="btn btn-secondary" onclick="clearInput()">
-            <i class="fas fa-trash"></i> Limpiar
-          </button>
-        </div>
-
-        <div id="preview"></div>
-        <div id="status"></div>
-      </form>
-    </div>
-  </div>
-
-  <script src="/js/main.js"></script>
-  <script>
-    let parsedData = null;
-
-    function analyzeImport() {
-      const input = document.getElementById('jsonInput').value.trim();
-      const preview = document.getElementById('preview');
-      const importBtn = document.getElementById('importBtn');
-      
-      if (!input) {
-        preview.innerHTML = '<div class="alert alert-error">Por favor pega el contenido</div>';
-        importBtn.disabled = true;
-        return;
-      }
-
-      try {
-        // Separar título del JSON
-        const lines = input.split('\n').map(l => l.trim()).filter(l => l);
-        let title = '';
-        let jsonStr = '';
-
-        // Buscar dónde empieza el JSON
-        for (let i = 0; i < lines.length; i++) {
-          if (lines[i].startsWith('{')) {
-            title = lines.slice(0, i).join(' ').trim();
-            jsonStr = lines.slice(i).join('\n');
-            break;
-          }
-        }
-
-        if (!title) title = 'Anime Importado';
-
-        const data = JSON.parse(jsonStr);
-
-        // Validar estructura
-        if (!data.chapters || !Array.isArray(data.chapters)) {
-          throw new Error('No hay capítulos en el JSON');
-        }
-
-        parsedData = {
-          title: title || data.anime_title || 'Anime Importado',
-          cover: data.anime_cover || data.image_url || null,
-          chapters: data.chapters
-        };
-
-        // Agrupar episodios
-        const episodeMap = new Map();
-        parsedData.chapters.forEach(ch => {
-          if (!episodeMap.has(ch.chapter_number)) {
-            episodeMap.set(ch.chapter_number, []);
-          }
-          episodeMap.get(ch.chapter_number).push({
-            server_name: ch.server_name || 'Servidor',
-            embed_url: ch.embed_url
-          });
-        });
-
-        // Mostrar preview
-        let previewHtml = `
-          <div class="preview">
-            <div class="preview-title">✓ Análisis completado</div>
-            <div class="preview-item"><strong>Anime:</strong> ${parsedData.title}</div>
-            <div class="preview-item"><strong>Portada:</strong> ${parsedData.cover ? '✓ Detectada' : '✗ Sin portada'}</div>
-            <div class="preview-item"><strong>Episodios:</strong> ${episodeMap.size}</div>
-            <div class="preview-item"><strong>Servidores:</strong> ${parsedData.chapters.length}</div>
-            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #333;">
-              <strong>Episodios a importar:</strong><br>
-        `;
-
-        [...episodeMap.entries()].sort((a, b) => a[0] - b[0]).forEach(([ep, servers]) => {
-          previewHtml += `
-            <div style="margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 3px; font-size: 11px;">
-              Ep ${ep}: ${servers.length} servidor${servers.length !== 1 ? 'es' : ''}
-              (${servers.map(s => s.server_name).join(', ')})
-            </div>
-          `;
-        });
-
-        previewHtml += `</div></div>`;
-        preview.innerHTML = previewHtml;
-        importBtn.disabled = false;
-
-      } catch (err) {
-        preview.innerHTML = `<div class="alert alert-error">❌ Error: ${err.message}</div>`;
-        importBtn.disabled = true;
-      }
-    }
-
-    async function importAnime(e) {
-      e.preventDefault();
-
-      if (!parsedData) {
-        alert('Por favor haz clic en Analizar primero');
-        return;
-      }
-
-      const status = document.getElementById('status');
-      const importBtn = document.getElementById('importBtn');
-      
-      try {
-        importBtn.disabled = true;
-        status.innerHTML = '<div class="alert alert-info">⏳ Importando...</div>';
-
-        // Crear anime
-        const animeData = {
-          titulo: parsedData.title,
-          imagen: parsedData.cover,
-          tipo: 'TV'
-        };
-
-        const insertedAnime = await db.insertAnime(animeData);
-        const animeId = insertedAnime[0]?.id;
-
-        if (!animeId) throw new Error('No se pudo crear el anime');
-
-        // Agrupar episodios
-        const episodeMap = new Map();
-        parsedData.chapters.forEach(ch => {
-          if (!episodeMap.has(ch.chapter_number)) {
-            episodeMap.set(ch.chapter_number, []);
-          }
-          episodeMap.get(ch.chapter_number).push({
-            server_name: ch.server_name || 'Servidor',
-            embed_url: ch.embed_url
-          });
-        });
-
-        // Insertar episodios
-        let insertedCount = 0;
-        for (const [numero, links] of episodeMap) {
-          await db.insertEpisode({
-            anime_id: animeId,
-            numero: numero,
-            links: links
-          });
-          insertedCount++;
-        }
-
-        status.innerHTML = `
-          <div class="alert alert-success">
-            ✅ ¡Importación completada!<br><br>
-            <strong>${parsedData.title}</strong><br>
-            📊 ${insertedCount} episodios importados<br>
-            🎌 Anime ID: ${animeId}
+        <form id="social-link-form" class="admin-form admin-grid admin-social-form">
+          <div>
+            <label for="social-title">Nombre opcional</label>
+            <input id="social-title" type="text" maxlength="40" placeholder="Instagram">
           </div>
-        `;
+          <div>
+            <label for="social-url">Link de red social</label>
+            <input id="social-url" type="url" placeholder="https://instagram.com/tuusuario" required>
+          </div>
+          <div>
+            <label for="social-sort-order">Orden</label>
+            <input id="social-sort-order" type="number" min="0" value="0">
+          </div>
+          <div>
+            <label for="social-enabled">Visibilidad</label>
+            <select id="social-enabled">
+              <option value="true">Visible</option>
+              <option value="false">Oculto</option>
+            </select>
+          </div>
+          <button id="save-social-link" type="submit">Guardar red</button>
+          <button id="cancel-social-edit" class="admin-secondary hidden" type="button">Cancelar edicion</button>
+        </form>
 
-        document.getElementById('jsonInput').value = '';
-        parsedData = null;
-        document.getElementById('preview').innerHTML = '';
-        importBtn.disabled = true;
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Red</th>
+                <th>Link</th>
+                <th>Orden</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="social-links-table"></tbody>
+          </table>
+        </div>
+      </div>
 
-      } catch (err) {
-        status.innerHTML = `<div class="alert alert-error">❌ Error: ${err.message}</div>`;
-        importBtn.disabled = false;
-      }
-    }
+      <div class="admin-section">
+        <div class="admin-section-head">
+          <h2>Carrusel</h2>
+          <span class="admin-help">Maximo 4 animes visibles</span>
+        </div>
+        <form id="carousel-form" class="admin-form admin-grid">
+          <div class="admin-wide">
+            <label for="carousel-anime-search">Seleccionar anime reciente</label>
+            <div class="admin-anime-picker">
+              <input id="carousel-anime-search" type="search" placeholder="Buscar anime para el carrusel..." autocomplete="off">
+              <div id="carousel-picker-results" class="anime-picker-results hidden"></div>
+            </div>
+          </div>
 
-    function clearInput() {
-      document.getElementById('jsonInput').value = '';
-      document.getElementById('preview').innerHTML = '';
-      document.getElementById('status').innerHTML = '';
-      document.getElementById('importBtn').disabled = true;
-      parsedData = null;
-    }
+          <div class="admin-wide">
+            <label for="carousel-banner-image">Link de imagen para banner</label>
+            <input id="carousel-banner-image" type="text" placeholder="Opcional: URL directa o ruta images/banner.jpg">
+            <div id="carousel-banner-preview" class="carousel-banner-preview hidden"></div>
+          </div>
 
-    document.getElementById('bulkImportForm').addEventListener('submit', importAnime);
-  </script>
+          <div class="admin-wide">
+            <label for="carousel-image-size">Tamaño de imagen: <span id="carousel-image-size-value">42%</span></label>
+            <input id="carousel-image-size" type="range" min="28" max="90" step="1" value="42">
+          </div>
+
+          <div class="admin-actions admin-wide">
+            <button id="save-carousel-item" type="submit">Mostrar en carrusel</button>
+            <button id="save-carousel-settings" class="admin-secondary" type="button">Guardar tamaño</button>
+            <button id="clear-carousel-form" class="admin-secondary" type="button">Limpiar</button>
+          </div>
+        </form>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table carousel-admin-table">
+            <thead>
+              <tr>
+                <th>Imagen</th>
+                <th>Anime</th>
+                <th>Estado</th>
+                <th>Banner</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="carousel-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <h2>Anime</h2>
+        <form id="anime-form" class="admin-form admin-grid">
+          <div>
+            <label for="anime-title">Titulo</label>
+            <input id="anime-title" type="text" maxlength="200" required>
+          </div>
+
+          <div>
+            <label for="anime-image">Link de portada del anime</label>
+            <input id="anime-image" type="url" placeholder="Pega una URL directa: https://...jpg, .png o .webp" required>
+          </div>
+
+          <div>
+            <label for="anime-banner-image">Link del banner del carrusel</label>
+            <input id="anime-banner-image" type="url" placeholder="Opcional: URL directa para el banner">
+          </div>
+
+          <div>
+            <label>Vista previa</label>
+            <img id="anime-image-preview" class="admin-image-preview" src="/images/placeholder.png" alt="Vista previa">
+          </div>
+
+          <div>
+            <label for="anime-year">Año</label>
+            <input id="anime-year" type="number" min="1900" max="2100" value="2026">
+          </div>
+
+          <div>
+            <label for="anime-status">Estado</label>
+            <select id="anime-status">
+              <option>En emisión</option>
+              <option>Completo</option>
+              <option>Próximamente</option>
+            </select>
+          </div>
+
+          <div class="admin-wide">
+            <label for="anime-genres">Generos</label>
+            <input id="anime-genres" type="text" placeholder="Acción, Fantasía, Romance">
+          </div>
+
+          <div>
+            <label for="anime-publish-status">Visibilidad</label>
+            <select id="anime-publish-status">
+              <option value="published">Publicado</option>
+              <option value="draft">Borrador</option>
+              <option value="hidden">Oculto</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="anime-sort-order">Orden destacado</label>
+            <input id="anime-sort-order" type="number" min="0" value="0">
+          </div>
+
+          <div class="admin-wide">
+            <label>Secciones</label>
+            <div class="admin-checks">
+              <label><input type="checkbox" name="anime-section" value="inicio"> Inicio</label>
+              <label><input type="checkbox" name="anime-section" value="destacados"> Destacados</label>
+              <label><input type="checkbox" name="anime-section" value="latino"> Latino</label>
+              <label><input type="checkbox" name="anime-section" value="directorio"> Directorio</label>
+            </div>
+          </div>
+
+          <div>
+            <label for="anime-slug">Slug URL</label>
+            <input id="anime-slug" type="text" placeholder="jujutsu-kaisen-temporada-3">
+          </div>
+
+          <div class="admin-wide">
+            <label for="anime-description">Descripción</label>
+            <textarea id="anime-description" rows="3" required></textarea>
+          </div>
+
+          <button id="save-anime" type="submit">Guardar anime</button>
+          <button id="cancel-anime-edit" class="admin-secondary hidden" type="button">Cancelar edicion</button>
+        </form>
+      </div>
+
+      <div class="admin-section">
+        <h2>Episodio</h2>
+      <form id="chapter-form" class="admin-form">
+        <label for="anime-select">Anime</label>
+        <div class="admin-anime-picker">
+          <input id="anime-search-picker" type="search" placeholder="Buscar anime para este episodio..." autocomplete="off" required>
+          <div id="anime-picker-results" class="anime-picker-results hidden"></div>
+        </div>
+        <select id="anime-select" class="hidden" required></select>
+
+        <label for="chapter-number">Episodio</label>
+        <input id="chapter-number" type="number" min="0" required>
+
+        <label for="server-name">Servidor</label>
+        <input id="server-name" type="text" value="Principal" maxlength="80" required>
+
+        <label for="embed-url">Link embed</label>
+        <input id="embed-url" type="url" placeholder="https://..." required>
+
+        <label for="cover-image">Link de portada del episodio</label>
+        <input id="cover-image" type="url" placeholder="Opcional: URL directa o se genera automaticamente">
+        <button id="clear-cover-image" class="admin-secondary" type="button">Usar automatica</button>
+
+        <label>Secciones del episodio</label>
+        <div class="admin-checks">
+          <label><input type="checkbox" name="chapter-section" value="inicio" checked> Inicio</label>
+        </div>
+
+        <label for="chapter-publish-status">Visibilidad</label>
+        <select id="chapter-publish-status">
+          <option value="published">Publicado</option>
+          <option value="draft">Borrador</option>
+          <option value="hidden">Oculto</option>
+        </select>
+
+        <button id="save-chapter" type="submit">Guardar episodio</button>
+        <button id="cancel-chapter-edit" class="admin-secondary hidden" type="button">Cancelar edicion</button>
+      </form>
+      </div>
+
+      <div class="admin-section">
+        <h2>Importar episodios masivos</h2>
+        <form id="bulk-import-form" class="admin-form">
+          <label for="bulk-import-input">Pega aqui titulos y paquetes JSON</label>
+          <textarea id="bulk-import-input" rows="10" wrap="off" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="Titulo del anime&#10;&#10;{&quot;import_type&quot;:&quot;bulk_package&quot;,&quot;chapters&quot;:[{&quot;chapter_number&quot;:1,&quot;server_name&quot;:&quot;SW&quot;,&quot;embed_url&quot;:&quot;https://...&quot;,&quot;cover_image&quot;:&quot;https://...jpg&quot;}]}"></textarea>
+          <p class="admin-help">El importador detecta portada del anime con anime_cover o image_url, y miniaturas por episodio con cover_image, thumbnail, thumb, poster, preview o imagen con URL .jpg, .png, .webp o .avif.</p>
+          <p class="admin-help">Si un anime no existe, se crea con portada provisional y luego puedes editarlo.</p>
+          <div class="admin-actions">
+            <button id="analyze-bulk-import" class="admin-secondary" type="button">Analizar</button>
+            <button id="import-bulk-chapters" type="submit" disabled>Importar episodios</button>
+            <button id="clear-bulk-import" class="admin-secondary" type="button">Limpiar</button>
+          </div>
+          <div id="bulk-import-preview" class="bulk-import-preview"></div>
+        </form>
+      </div>
+
+      <p id="admin-message" class="admin-message"></p>
+
+      <div class="admin-section">
+        <div class="admin-section-head">
+          <h2>Reportes de episodios</h2>
+          <button id="refresh-reports" class="admin-secondary" type="button">Refrescar</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table reports-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Anime</th>
+                <th>Ep</th>
+                <th>Servidor</th>
+                <th>Reportado por</th>
+                <th>Origen</th>
+                <th>Motivo</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="reports-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <h2>Animes creados desde admin</h2>
+        <input id="admin-anime-search" class="admin-search" type="search" placeholder="Buscar por titulo, slug, estado o seccion">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Portada</th>
+                <th>Titulo</th>
+                <th>Estado</th>
+                <th>Eps</th>
+                <th>Secciones</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="animes-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <h2 id="chapters-heading">Episodios subidos desde admin</h2>
+        <input id="admin-chapter-search" class="admin-search" type="search" placeholder="Filtrar episodios por numero, servidor o link">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Episodio</th>
+              <th>Portada</th>
+              <th>Servidor</th>
+              <th>Secciones</th>
+              <th>Visibilidad</th>
+              <th>Link</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="chapters-table"></tbody>
+        </table>
+      </div>
+      </div>
+
+      <div class="admin-section">
+        <h2>Eliminar servidores</h2>
+        <div class="admin-grid admin-search-grid">
+          <input id="server-delete-search" class="admin-search" type="search" placeholder="Buscar por anime, episodio, servidor o link">
+          <input id="server-delete-episode" class="admin-search" type="search" placeholder="Episodio">
+          <input id="server-delete-server" class="admin-search" type="search" placeholder="Servidor">
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Anime</th>
+                <th>Episodio</th>
+                <th>Servidor</th>
+                <th>Link</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="server-delete-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <h2>SEO / Sitemap</h2>
+        <button id="generate-sitemap" class="admin-secondary" type="button">Generar URLs</button>
+        <textarea id="sitemap-output" rows="6" readonly placeholder="Aqui apareceran las URLs para sitemap o Search Console"></textarea>
+      </div>
+    </section>
+  </main>
+
+  <script src="/admin.js?v=animeflv-skin-1"></script>
 </body>
 </html>
-

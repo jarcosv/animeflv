@@ -1,0 +1,129 @@
+(async function() {
+    console.log("%c 🚀 Extrayendo datos del episodio actual...", "color:#00ff00;font-weight:bold;");
+
+    const scripts = [...document.scripts];
+    let animeData = null;
+    let episodesData = null;
+    let videosData = null;
+
+    for (const s of scripts) {
+        const aInfo = s.innerHTML.match(/var anime_info = (\[.*?\]);/);
+        const eInfo = s.innerHTML.match(/var episodes = (\[.*?\]);/);
+        const vInfo = s.innerHTML.match(/var videos = (\{.*?\});/);
+
+        if (aInfo) animeData = JSON.parse(aInfo[1]);
+        if (eInfo) episodesData = JSON.parse(eInfo[1]);
+        if (vInfo) videosData = JSON.parse(vInfo[1]);
+    }
+
+    const animeTitle = animeData?.[1] || document.querySelector("h1")?.textContent?.trim() || "";
+    const animeSlug = animeData?.[2] || null;
+
+    const getEpisodeNumber = () => {
+        const urlMatch = location.pathname.match(/-(\d+)(?:\/|$)/);
+        if (urlMatch) return parseInt(urlMatch[1], 10);
+
+        if (episodesData) {
+            const current = episodesData.find(ep => location.href.includes(`${animeSlug}-${ep[0]}`));
+            if (current) return parseInt(current[0], 10);
+        }
+
+        const chapterText = document.querySelector('.Cap, .cap, .episode, .episodio')?.textContent;
+        const num = chapterText?.match(/\d+/);
+        return num ? parseInt(num[0], 10) : null;
+    };
+
+    const absoluteUrl = (url, pageUrl = location.href) => {
+        try {
+            return new URL(String(url).replace(/\\\//g, "/"), pageUrl).href;
+        } catch {
+            return "";
+        }
+    };
+
+    const extractImages = (html, pageUrl = location.href) => {
+        const found = new Set();
+        const patterns = [
+            /<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)["'][^>]+content=["']([^"']+)["']/gi,
+            /<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["'](?:og:image|twitter:image)["']/gi,
+            /<img[^>]+(?:src|data-src|data-original)=["']([^"']+\.(?:jpe?g|png|webp|avif)(?:\?[^"']*)?)["']/gi,
+            /https?:\\?\/\\?\/[^\s"'<>\\]+?\.(?:jpe?g|png|webp|avif)(?:\?[^\s"'<>\\]*)?/gi
+        ];
+
+        for (const pattern of patterns) {
+            let match;
+            while ((match = pattern.exec(html)) !== null) {
+                const raw = match[1] || match[0];
+                const url = absoluteUrl(raw, pageUrl);
+                if (url && /\.(jpe?g|png|webp|avif)(?:\?|$)/i.test(url)) {
+                    found.add(url);
+                }
+            }
+        }
+        return [...found];
+    };
+
+    const pickCoverImage = () => {
+        const pageImage =
+            document.querySelector('meta[property="og:image"]')?.content ||
+            document.querySelector('meta[name="twitter:image"]')?.content ||
+            document.querySelector('.Imagen img, .anime-img img, .AnimeCover img, .Banner img, .pic img')?.src ||
+            document.querySelector('img[src*="/uploads/animes"]')?.src ||
+            document.querySelector('img[src*="animeflv"]')?.src ||
+            "";
+
+        if (pageImage && !/logo|favicon|avatar/i.test(pageImage)) {
+            return absoluteUrl(pageImage);
+        }
+
+        const images = extractImages(document.documentElement.innerHTML);
+        return images.find(url => /cover|poster|anime|imagen|portada/i.test(url) && !/logo|favicon|avatar/i.test(url)) ||
+            images.find(url => !/logo|favicon|avatar/i.test(url)) ||
+            "";
+    };
+
+    const chapterNumber = getEpisodeNumber();
+    if (!chapterNumber) {
+        return console.error("❌ No se pudo obtener el número del capítulo.");
+    }
+
+    const animeCover = pickCoverImage();
+    const results = [];
+
+    if (videosData) {
+        ["SUB", "LAT"].forEach(type => {
+            if (!videosData[type]) return;
+            videosData[type].forEach(server => {
+                const code = String(server.code || server.embed || server.url || "");
+                const match = code.match(/src=["']([^"']+)["']/);
+                const embedUrl = match ? match[1] : code;
+                if (!embedUrl || embedUrl.includes("animeflv.net")) return;
+
+                results.push({
+                    chapter_number: chapterNumber,
+                    server_name: `${server.title || server.server || type}${type === "LAT" ? " (Latino)" : ""}`,
+                    embed_url: embedUrl,
+                    cover_image: animeCover || null
+                });
+            });
+        });
+    }
+
+    const finalJSON = JSON.stringify({
+        import_type: "single_chapter",
+        anime_title: animeTitle,
+        anime_cover: animeCover || null,
+        image_url: animeCover || null,
+        chapters: results
+    });
+
+    try {
+        await navigator.clipboard.writeText(finalJSON);
+        console.clear();
+        console.log("✅ JSON copiado:", JSON.parse(finalJSON));
+        alert(`COMPLETADO\n\nCapítulo: ${chapterNumber}\nServidores: ${results.length}\nPortada: ${animeCover ? "sí" : "no"}\n\nJSON copiado al portapapeles.`);
+    } catch {
+        console.log("JSON para copiar manualmente:", finalJSON);
+        alert("Extracción completa. Copia el JSON de la consola.");
+    }
+})();

@@ -1,0 +1,212 @@
+(async function () {
+  console.log("%c🚀 Extrayendo AnimeDBS con descargas...", "color:#00ff00;font-weight:bold;");
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  const absoluteUrl = (url, base = location.href) => {
+    try {
+      if (!url) return "";
+      return new URL(String(url).replace(/\\\//g, "/"), base).href;
+    } catch {
+      return "";
+    }
+  };
+
+  const parseHTML = html => new DOMParser().parseFromString(html, "text/html");
+
+  const cleanTitle = title =>
+    String(title || "")
+      .replace(/\s*Capitulo\s+\d+\s*Latino.*/i, "")
+      .replace(/\s*-\s*Anime\s*DBS.*/i, "")
+      .trim();
+
+  const decodeBase64 = value => {
+    try {
+      return decodeURIComponent(escape(atob(value)));
+    } catch {
+      try { return atob(value); } catch { return ""; }
+    }
+  };
+
+  const extractSrcFromHtml = html => {
+    const doc = parseHTML(html);
+    const frame = doc.querySelector("iframe, embed");
+    return frame?.getAttribute("src") || frame?.getAttribute("data-src") || "";
+  };
+
+  const hostName = url => {
+    try {
+      const host = new URL(absoluteUrl(url)).hostname.replace(/^www\./, "");
+      if (host.includes("ok.ru")) return "OK";
+      if (host.includes("mega.nz")) return "MEGA";
+      if (host.includes("voe")) return "VOE";
+      if (host.includes("dailymotion")) return "Dailymotion";
+      if (host.includes("filemoon")) return "Filemoon";
+      if (host.includes("pixeldrain")) return "Pixeldrain";
+      if (host.includes("listeamed")) return "Listeamed";
+      if (host.includes("hgcloud")) return "HGCloud";
+      if (host.includes("mediafire")) return "MediaFire";
+      return host.split(".")[0] || "Servidor";
+    } catch {
+      return "Servidor";
+    }
+  };
+
+  const pickAnimeCover = doc =>
+    absoluteUrl(
+      doc.querySelector("#singlepisode .headlist .thumb img")?.src ||
+      doc.querySelector(".tb img.wp-post-image")?.src ||
+      doc.querySelector("meta[property='og:image']")?.content ||
+      doc.querySelector("meta[name='twitter:image']")?.content ||
+      ""
+    );
+
+  const pickEpisodeCover = (doc, fallback) =>
+    absoluteUrl(
+      doc.querySelector("meta[property='og:image']")?.content ||
+      doc.querySelector("meta[name='twitter:image']")?.content ||
+      doc.querySelector(".epcontent img, article img")?.src ||
+      fallback ||
+      ""
+    );
+
+  const extractEpisodeNumber = (url, doc) => {
+    const fromUrl = String(url).match(/capitulo-(\d+)/i)?.[1];
+    const fromMeta = doc.querySelector('meta[itemprop="episodeNumber"]')?.content;
+    const fromTitle = doc.querySelector("h1")?.textContent?.match(/capitulo\s+(\d+)/i)?.[1];
+    return Number(fromUrl || fromMeta || fromTitle || 0);
+  };
+
+  const extractServers = (doc, pageUrl) => {
+    const servers = [];
+    const seen = new Set();
+
+    const addServer = (name, url) => {
+      const finalUrl = absoluteUrl(url, pageUrl);
+      if (!finalUrl || seen.has(finalUrl)) return;
+      seen.add(finalUrl);
+      servers.push({
+        server_name: name || hostName(finalUrl),
+        embed_url: finalUrl
+      });
+    };
+
+    doc.querySelectorAll("select.mirror option[value]").forEach((option, index) => {
+      const decoded = decodeBase64(option.value.trim());
+      const src = extractSrcFromHtml(decoded);
+      addServer(hostName(src) || option.textContent.trim() || `Opción ${index + 1}`, src);
+    });
+
+    doc.querySelectorAll(".contenido_tab iframe, .contenido_tab embed, .player-embed iframe").forEach((frame, index) => {
+      const src = frame.getAttribute("src") || frame.getAttribute("data-src") || frame.dataset.src || "";
+      addServer(hostName(src) || `Opción ${index + 1}`, src);
+    });
+
+    return servers;
+  };
+
+  const extractDownloads = (doc, pageUrl) => {
+    const downloads = [];
+    const seen = new Set();
+
+    const addDownload = (quality, name, href) => {
+      const url = absoluteUrl(href, pageUrl);
+      if (!url || seen.has(url)) return;
+      seen.add(url);
+      downloads.push({
+        quality: String(quality || "HD").trim(),
+        server: String(name || hostName(url) || "Descarga").trim(),
+        url
+      });
+    };
+
+    doc.querySelectorAll(".soraurlx").forEach(row => {
+      const quality = row.querySelector("strong")?.textContent?.trim() || "HD";
+      row.querySelectorAll("a[href]").forEach(a => {
+        addDownload(quality, a.textContent.trim() || hostName(a.href), a.href);
+      });
+    });
+
+    doc.querySelectorAll("#tab6 a[href], .contenido_tab[id*='tab'] a[href]").forEach(a => {
+      const containerText = a.closest(".contenido_tab")?.textContent || "";
+      const quality = containerText.match(/\b(480p|720p|1080p|HD|FHD)\b/i)?.[1] || "HD";
+      addDownload(quality, a.textContent.trim() || hostName(a.href), a.href);
+    });
+
+    return downloads;
+  };
+
+  const startDoc = document;
+  const animeTitle =
+    cleanTitle(startDoc.querySelector("#singlepisode .headlist h2 a")?.textContent) ||
+    cleanTitle(startDoc.querySelector("article a[href*='/anime/']")?.textContent) ||
+    cleanTitle(startDoc.querySelector("h1")?.textContent) ||
+    cleanTitle(document.title);
+
+  const animeCover = pickAnimeCover(startDoc);
+
+  let episodeLinks = [...startDoc.querySelectorAll(".episodelist a[href*='capitulo']")]
+    .map(a => absoluteUrl(a.href))
+    .filter(Boolean);
+
+  episodeLinks = [...new Set(episodeLinks)]
+    .map(url => ({ url, n: Number(url.match(/capitulo-(\d+)/i)?.[1] || 0) }))
+    .filter(ep => ep.n > 0)
+    .sort((a, b) => a.n - b.n);
+
+  if (!episodeLinks.length) {
+    console.error("❌ No encontré la lista de capítulos. Entra a un capítulo de AnimeDBS que tenga la lista lateral.");
+    return;
+  }
+
+  const chapters = [];
+
+  for (let i = 0; i < episodeLinks.length; i++) {
+    const ep = episodeLinks[i];
+    console.log(`🔎 Capítulo ${ep.n} (${i + 1}/${episodeLinks.length})`);
+
+    try {
+      const res = await fetch(ep.url, { credentials: "include" });
+      const html = await res.text();
+      const doc = parseHTML(html);
+      const chapterNumber = extractEpisodeNumber(ep.url, doc);
+      const cover = pickEpisodeCover(doc, animeCover);
+      const servers = extractServers(doc, ep.url);
+      const downloads = extractDownloads(doc, ep.url);
+
+      servers.forEach(server => {
+        chapters.push({
+          chapter_number: chapterNumber,
+          server_name: server.server_name,
+          embed_url: server.embed_url,
+          cover_image: cover || null,
+          downloads
+        });
+      });
+
+      console.log(`✅ Cap ${chapterNumber}: ${servers.length} servidores, ${downloads.length} descargas`);
+    } catch (err) {
+      console.error(`❌ Error en capítulo ${ep.n}`, err);
+    }
+
+    await sleep(350);
+  }
+
+  const finalJSON = JSON.stringify({
+    import_type: "bulk_package",
+    anime_title: animeTitle,
+    anime_cover: animeCover || null,
+    image_url: animeCover || null,
+    chapters
+  });
+
+  try {
+    await navigator.clipboard.writeText(finalJSON);
+    console.clear();
+    console.log("✅ JSON copiado al portapapeles:", JSON.parse(finalJSON));
+    alert(`COMPLETADO\n\nAnime: ${animeTitle}\nCapítulos detectados: ${episodeLinks.length}\nServidores extraídos: ${chapters.length}\n\nJSON copiado al portapapeles.`);
+  } catch {
+    console.log("JSON para copiar manualmente:", finalJSON);
+    alert("Extracción completa. Copia el JSON desde la consola.");
+  }
+})();
