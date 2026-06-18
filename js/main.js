@@ -161,7 +161,7 @@ function loadTopAnimes() {
         }
 
         grid.innerHTML = animes.slice(0, 12).map(anime => `
-          <div class="anime-card">
+          <div class="anime-card" onclick="abrirUltimoEpisodio(${anime.identificador})" style="cursor:pointer;">
             <div class="anime-image">
               ${anime.imagen ? `
                 <img src="${anime.imagen}" alt="${anime.titulo}" loading="lazy">
@@ -211,4 +211,28 @@ function loadSidebar() {
         resolve();
       });
   });
+}
+async function abrirUltimoEpisodio(idAnime) {
+  try {
+
+    const episodios = await db.request(
+      'GET',
+      `/episodios?id_de_anime=eq.${idAnime}&select=*`
+    );
+
+    if (!episodios || episodios.length === 0) {
+      alert('Este anime no tiene episodios');
+      return;
+    }
+
+    const ultimo = episodios.sort(
+      (a, b) => b.numero - a.numero
+    )[0];
+
+    window.location.href =
+      `ver.html?anime=${idAnime}&ep=${ultimo.numero}`;
+
+  } catch (error) {
+    console.error(error);
+  }
 }
