@@ -345,7 +345,7 @@ async function loadAnimeDataBySlug(slug) {
       return;
     }
 
-    currentAnimeId = animeData.id;
+    currentAnimeId = animeData.identificador;
     currentAnimeData = animeData;
 
     document.getElementById('mainTitle').textContent = animeData.titulo;
@@ -364,7 +364,7 @@ async function loadAnimeDataBySlug(slug) {
 async function loadAllEpisodesForAnime() {
   try {
     allEpisodes = await supabaseRequest(
-      `/episodios?anime_id=eq.${currentAnimeId}&select=id,numero,links,cover_image&order=numero.asc`
+      `/episodios?id_de_anime=eq.${currentAnimeId}&select=identificador,numero,"campo de golf","imagen de portada"&order=numero.asc`
     );
   } catch (err) {
     console.error('Error loading episode list:', err);
