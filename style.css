@@ -3855,6 +3855,35 @@ main,
   body:not(.admin-page) header {
     grid-template-columns: auto 1fr minmax(150px, 190px) auto;
     padding-inline: max(30px, calc((100vw - 1100px) / 2));
+    min-height: 74px;
+    align-items: center;
+  }
+
+  body:not(.admin-page) .site-logo,
+  body:not(.admin-page) .main-nav,
+  body:not(.admin-page) .search-container,
+  body:not(.admin-page) .user-actions {
+    grid-row: 1;
+    align-self: center;
+  }
+
+  body:not(.admin-page) .site-logo {
+    justify-self: start;
+  }
+
+  body:not(.admin-page) .main-nav {
+    justify-self: end;
+  }
+
+  body:not(.admin-page) .search-container {
+    justify-self: stretch;
+    display: flex;
+    align-items: center;
+  }
+
+  body:not(.admin-page) .user-actions {
+    display: flex;
+    align-items: center;
   }
 
   .home-main .anime-list {
