@@ -15,6 +15,7 @@ CREATE TABLE episodios (
   numero INT NOT NULL,
   titulo VARCHAR(255),
   links JSONB, -- {"servidor": "url", "servidor2": "url2"}
+  cover_image VARCHAR(500),
   created_at TIMESTAMP DEFAULT NOW()
 );
 

@@ -176,8 +176,17 @@ body { background: #1a1a1a; color: #fff; font-family: -apple-system, BlinkMacSys
     }
 
     async function loadAnimePage() {
+      // Soporta /anime/slug-del-anime (ruta real usada en el sitio)
+      // y también ?slug= por compatibilidad si se accede directo a anime.html
       const params = new URLSearchParams(window.location.search);
-      const slug = params.get('slug');
+      let slug = params.get('slug');
+
+      if (!slug) {
+        const pathParts = window.location.pathname
+          .split('/')
+          .filter(s => s.length > 0 && s.toLowerCase() !== 'anime.html');
+        slug = pathParts[pathParts.length - 1] || null;
+      }
 
       if (!slug) {
         alert('Anime no especificado');

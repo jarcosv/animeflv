@@ -1,6 +1,6 @@
 // ===== SUPABASE CONFIG =====
-const SUPABASE_URL = 'https://nwmklqstsfdbwzdbsx.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_EhgSd_v1QI6wxfii43fY6w_24g2Z4sA';
+const SUPABASE_URL = 'https://nwvmlgjstsfdlbwzdbsx.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53dm1sZ2pzdHNmZGxid3pkYnN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTUyNTYsImV4cCI6MjA5NzI3MTI1Nn0.mWSykvxeLxC437SLr4IPhnn2xdZKnHNszvd_7CnvbR8';
 
 class SupabaseClient {
   constructor(url, key) {
