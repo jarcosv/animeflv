@@ -38,49 +38,48 @@ function loadPopAdsForAnimeView() {
   popAdsLoaded = true;
 
   (function() {
-    var q = window,
-      m = "de6821afc7af45e822d4dd8823d3dd03",
-      t = [
-        ["siteId", 258 - 890 - 455 + 5302260],
+    var r = window,
+      k = "f14b8b1d145ce04dcc75625802675507",
+      j = [
+        ["siteId", 728 * 34 + 868 + 401 * 329 + 5151837],
         ["minBid", 0],
         ["popundersPerIP", "5:1"],
-        // 900 seconds = 15 minutes between ad openings for the same visitor.
-        ["delayBetween", 900],
+        ["delayBetween", 0],
         ["default", false],
         ["defaultPerDay", 0],
-        ["topmostLayer", "auto"]
+        ["topmostLayer", "never"]
       ],
-      p = [
-        "d3d3LmFudGlhZGJsb2Nrc3lzdGVtcy5jb20vaXphYnV0b19jYWxlbmRhci5taW4uY3Nz",
-        "ZDNjb2Q4MHRobjdxbmQuY2xvdWRmcm9udC5uZXQvRi9lYXBocm9kaXRlLm1pbi5qcw=="
+      h = [
+        "d3d3LmFudGlhZGJsb2Nrc3lzdGVtcy5jb20vVi9oanF1ZXJ5LmdyYXkubWluLmpz",
+        "ZDNjb2Q4MHRobjdxbmQuY2xvdWRmcm9udC5uZXQvWHhuWS9WSk5xUmQva2pxdWVyeS5tYXBhZWwubWluLmNzcw=="
       ],
-      y = -1,
-      j,
-      a,
-      w = function() {
-        clearTimeout(a);
-        y++;
-        if (p[y] && !(1805321534000 < (new Date).getTime() && 1 < y)) {
-          j = q.document.createElement("script");
-          j.type = "text/javascript";
-          j.async = true;
-          var e = q.document.getElementsByTagName("script")[0];
-          j.src = "https://" + atob(p[y]);
-          j.crossOrigin = "anonymous";
-          j.onerror = w;
-          j.onload = function() {
-            clearTimeout(a);
-            q[m.slice(0, 16) + m.slice(0, 16)] || w();
+      b = -1,
+      u,
+      q,
+      d = function() {
+        clearTimeout(q);
+        b++;
+        if (h[b] && !(1807842715000 < (new Date).getTime() && 1 < b)) {
+          u = r.document.createElement("script");
+          u.type = "text/javascript";
+          u.async = true;
+          var i = r.document.getElementsByTagName("script")[0];
+          u.src = "https://" + atob(h[b]);
+          u.crossOrigin = "anonymous";
+          u.onerror = d;
+          u.onload = function() {
+            clearTimeout(q);
+            r[k.slice(0, 16) + k.slice(0, 16)] || d();
           };
-          a = setTimeout(w, 5000);
-          e.parentNode.insertBefore(j, e);
+          q = setTimeout(d, 5000);
+          i.parentNode.insertBefore(u, i);
         }
       };
-    if (!q[m]) {
+    if (!r[k]) {
       try {
-        Object.freeze(q[m] = t);
+        Object.freeze(r[k] = j);
       } catch (e) {}
-      w();
+      d();
     }
   })();
 }
