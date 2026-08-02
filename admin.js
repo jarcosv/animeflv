@@ -1994,13 +1994,26 @@ async function importBulkChapters(event) {
 
     const batch = Array.from(seen.values()).map(({ anime_cover, ...row }) => row);
     setMessage(`Importando servidores ${index + 1}-${Math.min(index + batch.length, resolvedRows.length)} de ${resolvedRows.length}...`);
-    await supabaseRequest('anime_chapters?on_conflict=anime_title,chapter_number,server_name', {
+    const importedRows = await supabaseRequest('anime_chapters?on_conflict=anime_title,chapter_number,server_name', {
       method: 'POST',
       headers: {
-        Prefer: 'resolution=merge-duplicates,return=minimal'
+        Prefer: 'resolution=merge-duplicates,return=representation'
       },
       body: JSON.stringify(batch)
-    });
+    }) || [];
+
+    if (Array.isArray(importedRows) && importedRows.length) {
+      for (const row of importedRows) {
+        if (row.publish_status === 'published' && row.created_at && row.updated_at && row.created_at === row.updated_at) {
+          try {
+            await publishChapterToFacebook(row.anime_title, row.chapter_number);
+          } catch (error) {
+            console.error('Facebook publish error (bulk import):', error);
+          }
+        }
+      }
+    }
+
     await yieldToBrowser();
   }
 
