@@ -431,6 +431,29 @@ function cleanPublishStatus(value) {
   return PUBLISH_STATUS_VALUES.includes(value) ? value : 'published';
 }
 
+async function publishChapterToFacebook(animeTitle, chapterNumber) {
+  const session = getAdminSession();
+  if (!session?.access_token) {
+    throw new Error('No hay sesión de administrador válida para publicar en Facebook.');
+  }
+
+  const response = await fetch('/api/facebook-post', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`
+    },
+    body: JSON.stringify({ anime_title: animeTitle, chapter_number: chapterNumber })
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Facebook publish failed: ${text}`);
+  }
+
+  return response.json();
+}
+
 function getAnimeSections(title = animeTitle?.value || '') {
   const values = getCheckedValues('anime-section');
   const sections = looksLikeLatinoTitle(title) && !values.includes('latino')
@@ -1312,10 +1335,21 @@ async function saveChapter(event) {
   }
 
   resetChapterForm();
-  setMessage('Episodio guardado.', 'success');
   await refreshPanel();
   animeSelect.value = payload.anime_title;
   renderChaptersTable();
+
+  if (!editingChapter && payload.publish_status === 'published') {
+    try {
+      await publishChapterToFacebook(payload.anime_title, payload.chapter_number);
+      setMessage('Episodio guardado y publicado en Facebook.', 'success');
+    } catch (error) {
+      console.error('Facebook publish error:', error);
+      setMessage('Episodio guardado. Error al publicar en Facebook.', 'warning');
+    }
+  } else {
+    setMessage('Episodio guardado.', 'success');
+  }
 }
 
 function findJsonEnd(text, startIndex) {
