@@ -1345,7 +1345,7 @@ async function saveChapter(event) {
       setMessage('Episodio guardado y publicado en Facebook.', 'success');
     } catch (error) {
       console.error('Facebook publish error:', error);
-      setMessage('Episodio guardado. Error al publicar en Facebook.', 'warning');
+      setMessage(`Episodio guardado. Error al publicar en Facebook: ${error.message}`, 'warning');
     }
   } else {
     setMessage('Episodio guardado.', 'success');
