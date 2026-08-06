@@ -122,7 +122,9 @@ async function interpretWithAI(rawText) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text: rawText })
   });
-  return response.json();
+  const data = await response.json();
+  if (data.error) return { action: 'answer', answer: data.error };
+  return data;
 }
 
 async function handleCommand(rawText) {

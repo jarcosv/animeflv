@@ -57,6 +57,13 @@ module.exports = async function handler(req, res) {
   });
 
   const data = await response.json();
+  if (!response.ok) {
+    return res.status(200).json({
+      action: 'answer',
+      answer: data.error?.message || `Gemini respondio con error ${response.status}.`
+    });
+  }
+
   const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
 
   try {
@@ -67,9 +74,6 @@ module.exports = async function handler(req, res) {
       answer: command.answer || 'Listo.'
     });
   } catch {
-    return res.status(200).json({
-      action: 'answer',
-      answer: raw || 'No pude interpretar eso.'
-    });
+    return res.status(200).json({ action: 'answer', answer: raw || 'No pude interpretar eso.' });
   }
 };

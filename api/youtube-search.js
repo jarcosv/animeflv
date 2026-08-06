@@ -20,6 +20,10 @@ module.exports = async function handler(req, res) {
 
   const response = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`);
   const data = await response.json();
+  if (!response.ok) {
+    return res.status(200).json({ error: data.error?.message || `YouTube respondio con error ${response.status}.` });
+  }
+
   const item = data.items?.[0];
 
   res.status(200).json({

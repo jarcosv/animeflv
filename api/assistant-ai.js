@@ -28,6 +28,10 @@ module.exports = async function handler(req, res) {
   });
 
   const data = await response.json();
+  if (!response.ok) {
+    return res.status(200).json({ error: data.error?.message || `Gemini respondio con error ${response.status}.` });
+  }
+
   const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   res.status(200).json({ answer: answer || 'No pude responder ahora.' });
 };
