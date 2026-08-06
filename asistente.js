@@ -6,11 +6,17 @@ const transcriptEl = document.getElementById('transcript');
 const answerEl = document.getElementById('answer');
 const listenBtn = document.getElementById('listen-btn');
 const stopBtn = document.getElementById('stop-btn');
+const micTestBtn = document.getElementById('mic-test-btn');
 const textCommandForm = document.getElementById('text-command-form');
 const textCommandInput = document.getElementById('text-command');
+const debugEl = document.getElementById('debug');
 
 function setStatus(text) {
   statusEl.textContent = text;
+}
+
+function setDebug(text) {
+  debugEl.textContent = text;
 }
 
 function speak(text) {
@@ -261,7 +267,38 @@ async function startGeminiAudioFallback() {
   }
 }
 
+async function testMicrophone() {
+  const lines = [];
+  lines.push(`HTTPS: ${window.isSecureContext ? 'si' : 'no'}`);
+  lines.push(`SpeechRecognition: ${Boolean(window.SpeechRecognition || window.webkitSpeechRecognition) ? 'si' : 'no'}`);
+  lines.push(`mediaDevices: ${Boolean(navigator.mediaDevices?.getUserMedia) ? 'si' : 'no'}`);
+
+  try {
+    if (navigator.permissions?.query) {
+      const permission = await navigator.permissions.query({ name: 'microphone' });
+      lines.push(`permiso Chrome: ${permission.state}`);
+    }
+  } catch (error) {
+    lines.push(`permiso Chrome: no disponible`);
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    lines.push('getUserMedia: OK');
+    setStatus('Microfono OK');
+    speak('Microfono funcionando.');
+    stream.getTracks().forEach(track => track.stop());
+  } catch (error) {
+    lines.push(`getUserMedia: ${error.name} ${error.message}`);
+    setStatus('Microfono bloqueado');
+    speak('Chrome o Windows sigue bloqueando el microfono.');
+  }
+
+  setDebug(lines.join('\n'));
+}
+
 listenBtn.addEventListener('click', startListening);
+micTestBtn.addEventListener('click', testMicrophone);
 stopBtn.addEventListener('click', () => handleCommand('apaga'));
 textCommandForm.addEventListener('submit', event => {
   event.preventDefault();

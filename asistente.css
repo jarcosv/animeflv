@@ -100,12 +100,24 @@ button {
   background: #ff6b6b;
 }
 
+#mic-test-btn {
+  background: #f9d66d;
+}
+
 .player-card {
   margin-top: 18px;
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: 8px;
   background: #070710;
+}
+
+.debug {
+  min-height: 34px;
+  margin: 12px 0 0;
+  white-space: pre-wrap;
+  color: #9aa4c7;
+  font-size: 12px;
 }
 
 #player,
