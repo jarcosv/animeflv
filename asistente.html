@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistente AnimeFLV</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/favicon.png">
+  <link rel="stylesheet" href="/asistente.css">
+</head>
+<body>
+  <main class="assistant-shell">
+    <section class="assistant-panel">
+      <div class="assistant-head">
+        <a href="/" class="brand">AnimeFLV</a>
+        <span id="status" class="status">Listo</span>
+      </div>
+
+      <div class="orb" aria-hidden="true"></div>
+      <h1>Asistente de voz</h1>
+      <p id="transcript" class="transcript">Di: "pon música de Naruto", "pausa", "continúa", "sube volumen", "baja volumen", "apaga" o hazme una pregunta.</p>
+
+      <div class="controls">
+        <button id="listen-btn" type="button">Hablar</button>
+        <button id="stop-btn" type="button">Apagar</button>
+      </div>
+
+      <div class="player-card">
+        <div id="player"></div>
+      </div>
+
+      <div id="answer" class="answer"></div>
+    </section>
+  </main>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="/asistente.js"></script>
+</body>
+</html>
