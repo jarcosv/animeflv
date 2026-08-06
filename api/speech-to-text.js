@@ -8,22 +8,40 @@ module.exports = async function handler(req, res) {
   if (!key) return res.status(200).json({ error: 'Falta GEMINI_API_KEY.' });
   if (!audio) return res.status(200).json({ error: 'No llego audio.' });
 
-  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest';
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{
-        role: 'user',
-        parts: [
-          { text: 'Transcribe este audio en espanol. Devuelve solo el texto, sin explicaciones.' },
-          { inlineData: { mimeType, data: audio } }
-        ]
-      }]
-    })
-  });
+  const models = [
+    process.env.GEMINI_MODEL,
+    'gemini-1.5-flash-latest',
+    'gemini-1.5-flash-002',
+    'gemini-1.5-flash-8b-latest',
+    'gemini-2.0-flash'
+  ].filter(Boolean);
 
-  const data = await response.json();
+  let data = null;
+  let lastError = '';
+
+  for (const model of models) {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          role: 'user',
+          parts: [
+            { text: 'Transcribe este audio en espanol. Devuelve solo el texto, sin explicaciones.' },
+            { inlineData: { mimeType, data: audio } }
+          ]
+        }]
+      })
+    });
+
+    data = await response.json();
+    if (response.ok) break;
+    lastError = data.error?.message || `Gemini respondio con error ${response.status}.`;
+    data = null;
+  }
+
+  if (!data) return res.status(200).json({ error: lastError || 'Gemini no respondio.' });
+
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   res.status(200).json({ text: text.trim() });
 };
