@@ -32,6 +32,26 @@ body {
   justify-content: space-between;
 }
 
+.text-command {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.text-command input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: #fff;
+  background: #0b0b16;
+}
+
+.text-command button {
+  flex: 0 0 120px;
+}
+
 .brand {
   color: #ff6b6b;
   font-weight: 800;
@@ -96,6 +116,8 @@ button {
 
 @media (max-width: 560px) {
   .assistant-panel { padding: 18px; }
-  .controls { flex-direction: column; }
+  .controls,
+  .text-command { flex-direction: column; }
   button { width: 100%; }
+  .text-command button { flex-basis: auto; }
 }

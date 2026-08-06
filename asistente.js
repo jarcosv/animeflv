@@ -6,6 +6,8 @@ const transcriptEl = document.getElementById('transcript');
 const answerEl = document.getElementById('answer');
 const listenBtn = document.getElementById('listen-btn');
 const stopBtn = document.getElementById('stop-btn');
+const textCommandForm = document.getElementById('text-command-form');
+const textCommandInput = document.getElementById('text-command');
 
 function setStatus(text) {
   statusEl.textContent = text;
@@ -16,6 +18,7 @@ function speak(text) {
   speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'es-ES';
+  utterance.volume = 1;
   speechSynthesis.speak(utterance);
 }
 
@@ -171,10 +174,18 @@ async function handleCommand(rawText) {
   askAI(rawText);
 }
 
-function startListening() {
+async function startListening() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     speak('Tu navegador no soporta reconocimiento de voz. Prueba con Chrome.');
+    return;
+  }
+
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (error) {
+    speak('Debes permitir el microfono en el navegador.');
+    setStatus('Microfono bloqueado');
     return;
   }
 
@@ -183,7 +194,15 @@ function startListening() {
   recognition.interimResults = false;
   recognition.continuous = false;
   recognition.onstart = () => setStatus('Escuchando...');
-  recognition.onerror = () => setStatus('No te escuche bien');
+  recognition.onerror = event => {
+    const messages = {
+      'no-speech': 'No escuche nada. Habla despues de presionar el boton.',
+      'audio-capture': 'No encuentro un microfono activo.',
+      'not-allowed': 'El microfono esta bloqueado.'
+    };
+    speak(messages[event.error] || `Error de microfono: ${event.error}`);
+    setStatus('No te escuche bien');
+  };
   recognition.onresult = event => handleCommand(event.results[0][0].transcript);
   recognition.onend = () => {
     if (statusEl.textContent === 'Escuchando...') setStatus('Listo');
@@ -193,3 +212,10 @@ function startListening() {
 
 listenBtn.addEventListener('click', startListening);
 stopBtn.addEventListener('click', () => handleCommand('apaga'));
+textCommandForm.addEventListener('submit', event => {
+  event.preventDefault();
+  const value = textCommandInput.value.trim();
+  if (!value) return;
+  textCommandInput.value = '';
+  handleCommand(value);
+});
