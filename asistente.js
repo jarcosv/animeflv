@@ -181,14 +181,6 @@ async function startListening() {
     return;
   }
 
-  try {
-    await navigator.mediaDevices.getUserMedia({ audio: true });
-  } catch (error) {
-    speak('Debes permitir el microfono en el navegador.');
-    setStatus('Microfono bloqueado');
-    return;
-  }
-
   const recognition = new SpeechRecognition();
   recognition.lang = 'es-ES';
   recognition.interimResults = false;
@@ -198,16 +190,23 @@ async function startListening() {
     const messages = {
       'no-speech': 'No escuche nada. Habla despues de presionar el boton.',
       'audio-capture': 'No encuentro un microfono activo.',
-      'not-allowed': 'El microfono esta bloqueado.'
+      'not-allowed': 'Chrome bloqueo el microfono. Revisa permisos del sitio y del sistema.',
+      'network': 'Chrome no pudo conectar con el servicio de reconocimiento de voz.'
     };
     speak(messages[event.error] || `Error de microfono: ${event.error}`);
-    setStatus('No te escuche bien');
+    setStatus(event.error || 'Error');
   };
   recognition.onresult = event => handleCommand(event.results[0][0].transcript);
   recognition.onend = () => {
     if (statusEl.textContent === 'Escuchando...') setStatus('Listo');
   };
-  recognition.start();
+
+  try {
+    recognition.start();
+  } catch (error) {
+    speak('No pude iniciar el reconocimiento de voz. Recarga la pagina e intenta otra vez.');
+    setStatus('Error');
+  }
 }
 
 listenBtn.addEventListener('click', startListening);
