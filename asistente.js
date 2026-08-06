@@ -187,6 +187,10 @@ async function startListening() {
   recognition.continuous = false;
   recognition.onstart = () => setStatus('Escuchando...');
   recognition.onerror = event => {
+    if (event.error === 'not-allowed') {
+      startGeminiAudioFallback();
+      return;
+    }
     const messages = {
       'no-speech': 'No escuche nada. Habla despues de presionar el boton.',
       'audio-capture': 'No encuentro un microfono activo.',
@@ -206,6 +210,54 @@ async function startListening() {
   } catch (error) {
     speak('No pude iniciar el reconocimiento de voz. Recarga la pagina e intenta otra vez.');
     setStatus('Error');
+  }
+}
+
+async function startGeminiAudioFallback() {
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    speak('Chrome bloqueo la voz y este navegador no permite grabar audio aqui.');
+    setStatus('Microfono bloqueado');
+    return;
+  }
+
+  try {
+    setStatus('Grabando 4 segundos...');
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream);
+    const chunks = [];
+
+    recorder.ondataavailable = event => {
+      if (event.data.size) chunks.push(event.data);
+    };
+
+    recorder.onstop = async () => {
+      stream.getTracks().forEach(track => track.stop());
+      const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = String(reader.result).split(',')[1] || '';
+        setStatus('Transcribiendo...');
+        const response = await fetch('/api/speech-to-text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audio: base64, mimeType: blob.type })
+        });
+        const data = await response.json();
+        if (data.text) {
+          handleCommand(data.text);
+        } else {
+          speak(data.error || 'No pude entender el audio.');
+          setStatus('Listo');
+        }
+      };
+      reader.readAsDataURL(blob);
+    };
+
+    recorder.start();
+    setTimeout(() => recorder.stop(), 4000);
+  } catch (error) {
+    speak('El microfono sigue bloqueado por Chrome o Windows.');
+    setStatus('Microfono bloqueado');
   }
 }
 
