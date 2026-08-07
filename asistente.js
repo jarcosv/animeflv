@@ -2,6 +2,8 @@ let player;
 let volume = 70;
 let assistantActive = false;
 let recognition = null;
+let isListening = false;
+let isProcessing = false;
 
 const statusEl = document.getElementById('status');
 const transcriptEl = document.getElementById('transcript');
@@ -28,6 +30,19 @@ function speak(text) {
   utterance.lang = 'es-ES';
   utterance.volume = 1;
   speechSynthesis.speak(utterance);
+}
+
+function speakAsync(text) {
+  return new Promise(resolve => {
+    answerEl.textContent = text;
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'es-ES';
+    utterance.volume = 1;
+    utterance.onend = resolve;
+    utterance.onerror = resolve;
+    speechSynthesis.speak(utterance);
+  });
 }
 
 function onYouTubeIframeAPIReady() {
@@ -132,12 +147,14 @@ async function interpretWithAI(rawText) {
 }
 
 async function handleCommand(rawText) {
+  isProcessing = true;
   const text = rawText.toLowerCase().trim();
   transcriptEl.textContent = rawText;
 
   try {
     const command = await interpretWithAI(rawText);
     await runCommand(command);
+    isProcessing = false;
     restartListeningSoon();
     return;
   } catch (error) {
@@ -147,6 +164,7 @@ async function handleCommand(rawText) {
   if (text.includes('pausa') || text.includes('pausar')) {
     player?.pauseVideo();
     speak('Pausado.');
+    isProcessing = false;
     restartListeningSoon();
     return;
   }
@@ -154,6 +172,7 @@ async function handleCommand(rawText) {
   if (text.includes('continua') || text.includes('continúa') || text.includes('play')) {
     player?.playVideo();
     speak('Continuando.');
+    isProcessing = false;
     restartListeningSoon();
     return;
   }
@@ -165,6 +184,7 @@ async function handleCommand(rawText) {
     setStatus('Apagado');
     answerEl.textContent = 'Apagado.';
     listenBtn.textContent = 'Hablar';
+    isProcessing = false;
     return;
   }
 
@@ -172,6 +192,7 @@ async function handleCommand(rawText) {
     volume = Math.min(100, volume + 15);
     player?.setVolume(volume);
     speak(`Volumen ${volume}.`);
+    isProcessing = false;
     restartListeningSoon();
     return;
   }
@@ -180,6 +201,7 @@ async function handleCommand(rawText) {
     volume = Math.max(0, volume - 15);
     player?.setVolume(volume);
     speak(`Volumen ${volume}.`);
+    isProcessing = false;
     restartListeningSoon();
     return;
   }
@@ -187,15 +209,18 @@ async function handleCommand(rawText) {
   const musicMatch = text.match(/(?:pon|reproduce|coloca|busca)\s+(?:musica|música|cancion|canción)?\s*(?:de)?\s*(.+)/);
   if (musicMatch?.[1]) {
     playMusic(musicMatch[1]);
+    isProcessing = false;
     restartListeningSoon();
     return;
   }
 
   askAI(rawText);
+  isProcessing = false;
   restartListeningSoon();
 }
 
 async function startListening() {
+  if (isListening || isProcessing) return;
   assistantActive = true;
   listenBtn.textContent = 'Escuchando';
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -208,8 +233,12 @@ async function startListening() {
   recognition.lang = 'es-ES';
   recognition.interimResults = false;
   recognition.continuous = false;
-  recognition.onstart = () => setStatus('Escuchando...');
+  recognition.onstart = () => {
+    isListening = true;
+    setStatus('Escuchando...');
+  };
   recognition.onerror = event => {
+    isListening = false;
     if (event.error === 'not-allowed') {
       startGeminiAudioFallback();
       return;
@@ -222,11 +251,13 @@ async function startListening() {
     };
     speak(messages[event.error] || `Error de microfono: ${event.error}`);
     setStatus(event.error || 'Error');
+    if (assistantActive) setTimeout(restartListeningSoon, 1800);
   };
   recognition.onresult = event => handleCommand(event.results[0][0].transcript);
   recognition.onend = () => {
+    isListening = false;
     if (statusEl.textContent === 'Escuchando...') setStatus(assistantActive ? 'Activo' : 'Listo');
-    if (assistantActive) restartListeningSoon();
+    if (assistantActive && !isProcessing) restartListeningSoon();
   };
 
   try {
@@ -238,9 +269,10 @@ async function startListening() {
 }
 
 function restartListeningSoon() {
-  if (!assistantActive) return;
+  if (!assistantActive || isListening || isProcessing) return;
   setTimeout(() => {
-    if (!assistantActive || speechSynthesis.speaking) {
+    if (!assistantActive) return;
+    if (isListening || isProcessing || speechSynthesis.speaking) {
       restartListeningSoon();
       return;
     }
@@ -330,6 +362,8 @@ listenBtn.addEventListener('click', startListening);
 micTestBtn.addEventListener('click', testMicrophone);
 stopBtn.addEventListener('click', () => {
   assistantActive = false;
+  isListening = false;
+  isProcessing = false;
   recognition?.abort?.();
   player?.stopVideo();
   speechSynthesis.cancel();
