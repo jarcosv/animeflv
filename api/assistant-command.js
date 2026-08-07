@@ -3,13 +3,14 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Metodo no permitido.' });
   }
 
+  const groqKey = process.env.GROQ_API_KEY;
   const key = process.env.GEMINI_API_KEY;
   const text = String(req.body?.text || '').trim();
 
-  if (!key) {
+  if (!groqKey && !key) {
     return res.status(200).json({
       action: 'answer',
-      answer: 'Falta configurar GEMINI_API_KEY en Vercel.'
+      answer: 'Falta configurar GROQ_API_KEY en Vercel.'
     });
   }
 
@@ -18,6 +19,62 @@ module.exports = async function handler(req, res) {
       action: 'answer',
       answer: 'No escuche ningun comando.'
     });
+  }
+
+  const systemPrompt = [
+    'Eres el cerebro de un asistente de voz musical en una web.',
+    'Devuelve SOLO JSON valido, sin markdown.',
+    'Acciones validas:',
+    '{"action":"play_music","query":"texto para buscar en YouTube","answer":"respuesta breve"}',
+    '{"action":"pause","answer":"respuesta breve"}',
+    '{"action":"resume","answer":"respuesta breve"}',
+    '{"action":"stop","answer":"respuesta breve"}',
+    '{"action":"volume_up","answer":"respuesta breve"}',
+    '{"action":"volume_down","answer":"respuesta breve"}',
+    '{"action":"answer","answer":"respuesta breve"}',
+    'Interpreta frases naturales como: pon algo de rock, coloca openings de anime, callate, baja un poco, dale play, quiero escuchar Bad Bunny, etc.',
+    'Si pide musica o canciones, usa play_music.'
+  ].join('\n');
+
+  if (groqKey) {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${groqKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: text }
+        ],
+        temperature: 0.2,
+        response_format: { type: 'json_object' }
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return res.status(200).json({
+        action: 'answer',
+        answer: data.error?.message || `Groq respondio con error ${response.status}.`
+      });
+    }
+
+    try {
+      const command = JSON.parse(data.choices?.[0]?.message?.content || '{}');
+      return res.status(200).json({
+        action: command.action || 'answer',
+        query: command.query || '',
+        answer: command.answer || 'Listo.'
+      });
+    } catch {
+      return res.status(200).json({
+        action: 'answer',
+        answer: data.choices?.[0]?.message?.content || 'No pude interpretar eso.'
+      });
+    }
   }
 
   const models = [
@@ -39,20 +96,7 @@ module.exports = async function handler(req, res) {
     },
     body: JSON.stringify({
       systemInstruction: {
-        parts: [{ text: [
-          'Eres el cerebro de un asistente de voz musical en una web.',
-          'Devuelve SOLO JSON valido, sin markdown.',
-          'Acciones validas:',
-          '{"action":"play_music","query":"texto para buscar en YouTube","answer":"respuesta breve"}',
-          '{"action":"pause","answer":"respuesta breve"}',
-          '{"action":"resume","answer":"respuesta breve"}',
-          '{"action":"stop","answer":"respuesta breve"}',
-          '{"action":"volume_up","answer":"respuesta breve"}',
-          '{"action":"volume_down","answer":"respuesta breve"}',
-          '{"action":"answer","answer":"respuesta breve"}',
-          'Interpreta frases naturales como: pon algo de rock, coloca openings de anime, callate, baja un poco, dale play, quiero escuchar Bad Bunny, etc.',
-          'Si pide musica o canciones, usa play_music.'
-        ].join('\n') }]
+        parts: [{ text: systemPrompt }]
       },
       contents: [
         {
