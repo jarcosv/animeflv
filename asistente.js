@@ -1,5 +1,7 @@
 let player;
 let volume = 70;
+let assistantActive = false;
+let recognition = null;
 
 const statusEl = document.getElementById('status');
 const transcriptEl = document.getElementById('transcript');
@@ -91,10 +93,12 @@ async function runCommand(command) {
   }
 
   if (action === 'stop') {
+    assistantActive = false;
     player?.stopVideo();
     speechSynthesis.cancel();
     answerEl.textContent = command.answer || 'Apagado.';
     setStatus('Apagado');
+    listenBtn.textContent = 'Hablar';
     return;
   }
 
@@ -134,6 +138,7 @@ async function handleCommand(rawText) {
   try {
     const command = await interpretWithAI(rawText);
     await runCommand(command);
+    restartListeningSoon();
     return;
   } catch (error) {
     console.warn('No se pudo usar IA para interpretar:', error);
@@ -142,20 +147,24 @@ async function handleCommand(rawText) {
   if (text.includes('pausa') || text.includes('pausar')) {
     player?.pauseVideo();
     speak('Pausado.');
+    restartListeningSoon();
     return;
   }
 
   if (text.includes('continua') || text.includes('continúa') || text.includes('play')) {
     player?.playVideo();
     speak('Continuando.');
+    restartListeningSoon();
     return;
   }
 
   if (text.includes('apaga') || text.includes('deten') || text.includes('detén')) {
+    assistantActive = false;
     player?.stopVideo();
     speechSynthesis.cancel();
     setStatus('Apagado');
     answerEl.textContent = 'Apagado.';
+    listenBtn.textContent = 'Hablar';
     return;
   }
 
@@ -163,6 +172,7 @@ async function handleCommand(rawText) {
     volume = Math.min(100, volume + 15);
     player?.setVolume(volume);
     speak(`Volumen ${volume}.`);
+    restartListeningSoon();
     return;
   }
 
@@ -170,26 +180,31 @@ async function handleCommand(rawText) {
     volume = Math.max(0, volume - 15);
     player?.setVolume(volume);
     speak(`Volumen ${volume}.`);
+    restartListeningSoon();
     return;
   }
 
   const musicMatch = text.match(/(?:pon|reproduce|coloca|busca)\s+(?:musica|música|cancion|canción)?\s*(?:de)?\s*(.+)/);
   if (musicMatch?.[1]) {
     playMusic(musicMatch[1]);
+    restartListeningSoon();
     return;
   }
 
   askAI(rawText);
+  restartListeningSoon();
 }
 
 async function startListening() {
+  assistantActive = true;
+  listenBtn.textContent = 'Escuchando';
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     speak('Tu navegador no soporta reconocimiento de voz. Prueba con Chrome.');
     return;
   }
 
-  const recognition = new SpeechRecognition();
+  recognition = new SpeechRecognition();
   recognition.lang = 'es-ES';
   recognition.interimResults = false;
   recognition.continuous = false;
@@ -210,7 +225,8 @@ async function startListening() {
   };
   recognition.onresult = event => handleCommand(event.results[0][0].transcript);
   recognition.onend = () => {
-    if (statusEl.textContent === 'Escuchando...') setStatus('Listo');
+    if (statusEl.textContent === 'Escuchando...') setStatus(assistantActive ? 'Activo' : 'Listo');
+    if (assistantActive) restartListeningSoon();
   };
 
   try {
@@ -219,6 +235,17 @@ async function startListening() {
     speak('No pude iniciar el reconocimiento de voz. Recarga la pagina e intenta otra vez.');
     setStatus('Error');
   }
+}
+
+function restartListeningSoon() {
+  if (!assistantActive) return;
+  setTimeout(() => {
+    if (!assistantActive || speechSynthesis.speaking) {
+      restartListeningSoon();
+      return;
+    }
+    startListening();
+  }, 800);
 }
 
 async function startGeminiAudioFallback() {
@@ -301,7 +328,15 @@ async function testMicrophone() {
 
 listenBtn.addEventListener('click', startListening);
 micTestBtn.addEventListener('click', testMicrophone);
-stopBtn.addEventListener('click', () => handleCommand('apaga'));
+stopBtn.addEventListener('click', () => {
+  assistantActive = false;
+  recognition?.abort?.();
+  player?.stopVideo();
+  speechSynthesis.cancel();
+  setStatus('Apagado');
+  answerEl.textContent = 'Apagado.';
+  listenBtn.textContent = 'Hablar';
+});
 textCommandForm.addEventListener('submit', event => {
   event.preventDefault();
   const value = textCommandInput.value.trim();
