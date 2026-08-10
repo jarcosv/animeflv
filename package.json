@@ -4,7 +4,8 @@
   "private": true,
   "description": "AnimeFLV static site",
   "scripts": {
-    "build": "echo \"Static site - no build needed\"",
+    "build": "npm run seo:validate && node build-static.js",
+    "seo:validate": "node --check script.js && node --check api/og.js && node --check api/sitemap.js && node --check api/feed.js",
     "start": "python -m http.server 4173"
   }
 }

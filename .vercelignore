@@ -1,3 +1,13 @@
 astro-version/
 node_modules/
 .git/
+.vercel/
+dist/
+.agents/
+data/
+tools/
+temp-facebook-player/
+supabase-*.sql
+extractor-*.txt
+capitulos de anime.txt
+animes en emision.txt

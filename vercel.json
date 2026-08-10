@@ -1,8 +1,24 @@
 {
-  "buildCommand": "echo \"Static site - no build needed\"",
-  "outputDirectory": ".",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "installCommand": "echo \"No install needed\"",
+  "redirects": [
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/sitemap-episodes.xml",
+      "destination": "/sitemap.xml",
+      "permanent": true
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/",
+      "destination": "/api/og?type=home"
+    },
     {
       "source": "/anime/:slug",
       "destination": "/api/og?type=anime&slug=:slug"
@@ -10,6 +26,26 @@
     {
       "source": "/ver/:episode",
       "destination": "/api/og?type=watch&episode=:episode"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap?type=index"
+    },
+    {
+      "source": "/sitemap-pages.xml",
+      "destination": "/api/sitemap?type=pages"
+    },
+    {
+      "source": "/sitemap-anime.xml",
+      "destination": "/api/sitemap?type=anime"
+    },
+    {
+      "source": "/sitemap-episodes-:page.xml",
+      "destination": "/api/sitemap?type=episodes&page=:page"
+    },
+    {
+      "source": "/feed.xml",
+      "destination": "/api/feed"
     }
   ],
   "headers": [
@@ -36,6 +72,33 @@
     },
     {
       "source": "/admin.html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/anime.html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/asistente.html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",

@@ -1,6 +1,10 @@
 User-agent: *
 Allow: /
+Allow: /anime/
+Allow: /ver/
 Disallow: /admin.html
 Disallow: /anime.html
+Disallow: /asistente.html
+Disallow: /api/
 
 Sitemap: https://animeflv.lat/sitemap.xml

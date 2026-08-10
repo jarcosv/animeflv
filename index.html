@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-419">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <script>
     if (window.location.pathname.startsWith('/ver/')) {
       (function(s){s.dataset.zone='11069590',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))
@@ -12,8 +13,18 @@
   <meta name="description" content="AnimeFLV te permite ver anime online en HD y español latino. Disfruta últimos episodios, animes en emisión, estrenos, series populares y directorio anime actualizado.">
   <meta name="keywords" content="anime online, ver anime online, anime latino, anime HD, anime gratis, episodios anime, ultimos episodios, animes en emision, estrenos anime, directorio anime, AnimeFLV">
   <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="application-name" content="AnimeFLV">
+  <meta name="apple-mobile-web-app-title" content="AnimeFLV">
+  <meta name="format-detection" content="telephone=no">
   <meta name="theme-color" content="#11111f">
   <link rel="canonical" href="https://animeflv.lat/">
+  <link rel="home" href="https://animeflv.lat/">
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+  <link rel="alternate" type="application/rss+xml" title="Ultimos episodios de AnimeFLV" href="/feed.xml">
+  <link rel="preconnect" href="https://vanmxvfhagqfbwynpwzt.supabase.co" crossorigin>
+  <link rel="dns-prefetch" href="//vanmxvfhagqfbwynpwzt.supabase.co">
   <link rel="icon" type="image/png" href="/images/favicon.png">
   <link rel="apple-touch-icon" href="/images/favicon.png">
   <meta property="og:type" content="website">
@@ -21,25 +32,48 @@
   <meta property="og:title" content="Ver Anime Online HD en Español Latino - AnimeFLV">
   <meta property="og:description" content="Disfruta últimos episodios de anime, estrenos, animes en emisión y series populares online en HD desde AnimeFLV.">
   <meta property="og:url" content="https://animeflv.lat/">
-  <meta property="og:image" content="https://animeflv.lat/image.png">
+  <meta property="og:image" content="https://animeflv.lat/og-animeflv.png">
+  <meta property="og:image:secure_url" content="https://animeflv.lat/og-animeflv.png">
+  <meta property="og:image:alt" content="AnimeFLV - Ver anime online en español latino">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:locale" content="es_LA">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Ver Anime Online HD en Español Latino - AnimeFLV">
   <meta name="twitter:description" content="Disfruta últimos episodios de anime, estrenos, animes en emisión y series populares online en HD desde AnimeFLV.">
-  <meta name="twitter:image" content="https://animeflv.lat/image.png">
+  <meta name="twitter:image" content="https://animeflv.lat/og-animeflv.png">
+  <meta name="twitter:image:alt" content="AnimeFLV - Ver anime online en español latino">
   <script type="application/ld+json" id="site-schema">
     {
       "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "AnimeFLV",
-      "url": "https://animeflv.lat/",
-      "description": "AnimeFLV es una plataforma para ver anime online en HD y español latino, con últimos episodios, animes en emisión, estrenos, series populares y directorio anime actualizado.",
-      "inLanguage": "es",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://animeflv.lat/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://animeflv.lat/#website",
+          "name": "AnimeFLV",
+          "alternateName": ["Anime FLV", "AnimeFLV Latino"],
+          "url": "https://animeflv.lat/",
+          "description": "AnimeFLV es una plataforma para ver anime online en HD y español latino, con últimos episodios, animes en emisión, estrenos, series populares y directorio anime actualizado.",
+          "inLanguage": "es-419"
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://animeflv.lat/#organization",
+          "name": "AnimeFLV",
+          "url": "https://animeflv.lat/",
+          "logo": "https://animeflv.lat/image.png"
+        },
+        {
+          "@type": "CollectionPage",
+          "@id": "https://animeflv.lat/#webpage",
+          "name": "Ver Anime Online HD en Español Latino - AnimeFLV",
+          "url": "https://animeflv.lat/",
+          "isPartOf": { "@id": "https://animeflv.lat/#website" },
+          "about": { "@id": "https://animeflv.lat/#organization" },
+          "primaryImageOfPage": "https://animeflv.lat/og-animeflv.png",
+          "inLanguage": "es-419"
+        }
+      ]
     }
   </script>
   <link rel="stylesheet" href="/style.css?v=animeflv-skin-1">
@@ -55,7 +89,7 @@
   <header>
     <div class="header-top">
       <a href="/" class="site-logo">
-        <img src="/image.png" alt="Logo AnimeFLV" onerror="this.style.display='none'">
+        <img src="/image.png" width="167" height="47" alt="AnimeFLV" fetchpriority="high" onerror="this.style.display='none'">
       </a>
       <p class="tagline">Animes online en latino</p>
       <div class="user-actions">
@@ -75,6 +109,7 @@
       <input
         type="text"
         id="search"
+        aria-label="Buscar anime"
         placeholder="🔍 Buscar anime..."
         class="search-input"
       >
@@ -96,16 +131,15 @@
       </div>
 
       <!-- Botones de navegación -->
-      <button class="carousel-btn carousel-prev" id="prev-btn">❮</button>
-      <button class="carousel-btn carousel-next" id="next-btn">❯</button>
+      <button class="carousel-btn carousel-prev" id="prev-btn" type="button" aria-label="Anterior">❮</button>
+      <button class="carousel-btn carousel-next" id="next-btn" type="button" aria-label="Siguiente">❯</button>
 
       <!-- Indicadores -->
       <div id="carousel-indicators" class="carousel-indicators"></div>
     </div>
   </section>
 
-  <main>
-    <h1 class="sr-only">AnimeFLV - Ver anime online HD en español latino</h1>
+  <main id="content">
     <h2 id="main-title">Últimos episodios</h2>
     <div id="anime-list" class="anime-list"></div>
   </main>

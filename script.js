@@ -22,6 +22,7 @@ const SITE_URL = 'https://animeflv.lat/';
 const SITE_NAME = 'AnimeFLV';
 const HOME_TITLE = 'Ver Anime Online HD en Español Latino - AnimeFLV';
 const HOME_DESCRIPTION = 'AnimeFLV te permite ver anime online en HD y español latino. Disfruta últimos episodios, animes en emisión, estrenos, series populares y directorio anime actualizado.';
+const DEFAULT_OG_IMAGE = `${SITE_URL}og-animeflv.png`;
 let socialIntroText = '';
 let socialLinks = [];
 let carouselLoaded = false;
@@ -109,6 +110,22 @@ function setCanonical(url) {
   canonical.setAttribute('href', url);
 }
 
+function setLinkRelation(rel, url) {
+  const existing = document.head.querySelector(`link[rel="${rel}"]`);
+  if (!url) {
+    existing?.remove();
+    return;
+  }
+  const link = existing || getOrCreateMeta(`link[rel="${rel}"]`, 'link', { rel });
+  link.setAttribute('href', url);
+}
+
+function setRobots(value = 'index, follow, max-image-preview:large') {
+  setMeta('meta[name="robots"]', value, { name: 'robots' });
+  setMeta('meta[name="googlebot"]', 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1', { name: 'googlebot' });
+  setMeta('meta[name="bingbot"]', 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1', { name: 'bingbot' });
+}
+
 function toAbsoluteUrl(value) {
   try {
     return new URL(value || '', SITE_URL).href;
@@ -122,18 +139,149 @@ function setJsonLd(id, data) {
   script.textContent = JSON.stringify(data);
 }
 
+function removeJsonLd(id) {
+  document.getElementById(id)?.remove();
+}
+
+function setBaseSiteSchema() {
+  setJsonLd('site-schema', {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${SITE_URL}#website`,
+        name: SITE_NAME,
+        alternateName: ['Anime FLV', 'AnimeFLV Latino'],
+        url: SITE_URL,
+        inLanguage: 'es-419'
+      },
+      {
+        '@type': 'Organization',
+        '@id': `${SITE_URL}#organization`,
+        name: SITE_NAME,
+        url: SITE_URL,
+        logo: `${SITE_URL}image.png`
+      }
+    ]
+  });
+}
+
+function compactText(value, fallback = '', limit = 155) {
+  const text = String(value || fallback || '').replace(/\s+/g, ' ').trim();
+  if (text.length <= limit) return text;
+  return `${text.slice(0, Math.max(0, limit - 3)).replace(/\s+\S*$/, '')}...`;
+}
+
+function getAnimeDescription(anime, fallback = 'Episodios recientes, estrenos, animes en emisión y series completas.') {
+  return compactText(`${anime?.titulo || 'Anime'}: ver anime online en HD y español latino en ${SITE_NAME}. ${anime?.descripcion || fallback}`, HOME_DESCRIPTION, 160);
+}
+
+function setSocialMeta({ title, description, url, image, type = 'website', imageAlt = title, imageWidth, imageHeight }) {
+  const absoluteImage = toAbsoluteUrl(image || DEFAULT_OG_IMAGE);
+  setMeta('meta[property="og:type"]', type, { property: 'og:type' });
+  setMeta('meta[property="og:site_name"]', SITE_NAME, { property: 'og:site_name' });
+  setMeta('meta[property="og:title"]', title, { property: 'og:title' });
+  setMeta('meta[property="og:description"]', description, { property: 'og:description' });
+  setMeta('meta[property="og:url"]', url, { property: 'og:url' });
+  setMeta('meta[property="og:image"]', absoluteImage, { property: 'og:image' });
+  setMeta('meta[property="og:image:secure_url"]', absoluteImage, { property: 'og:image:secure_url' });
+  setMeta('meta[property="og:image:alt"]', imageAlt, { property: 'og:image:alt' });
+  if (imageWidth && imageHeight) {
+    setMeta('meta[property="og:image:width"]', String(imageWidth), { property: 'og:image:width' });
+    setMeta('meta[property="og:image:height"]', String(imageHeight), { property: 'og:image:height' });
+  } else {
+    document.head.querySelector('meta[property="og:image:width"]')?.remove();
+    document.head.querySelector('meta[property="og:image:height"]')?.remove();
+  }
+  setMeta('meta[property="og:locale"]', 'es_LA', { property: 'og:locale' });
+  setMeta('meta[name="twitter:card"]', 'summary_large_image', { name: 'twitter:card' });
+  setMeta('meta[name="twitter:title"]', title, { name: 'twitter:title' });
+  setMeta('meta[name="twitter:description"]', description, { name: 'twitter:description' });
+  setMeta('meta[name="twitter:image"]', absoluteImage, { name: 'twitter:image' });
+  setMeta('meta[name="twitter:image:alt"]', imageAlt, { name: 'twitter:image:alt' });
+}
+
 function updateHomeSEO() {
   document.title = HOME_TITLE;
   setCanonical(SITE_URL);
+  setRobots();
   setMeta('meta[name="description"]', HOME_DESCRIPTION, { name: 'description' });
   setMeta('meta[name="keywords"]', 'anime online, ver anime online, anime latino, anime HD, anime gratis, ultimos episodios, animes en emision, directorio anime, AnimeFLV', { name: 'keywords' });
-  setMeta('meta[property="og:title"]', HOME_TITLE, { property: 'og:title' });
-  setMeta('meta[property="og:description"]', HOME_DESCRIPTION, { property: 'og:description' });
-  setMeta('meta[property="og:url"]', SITE_URL, { property: 'og:url' });
-  setMeta('meta[property="og:image"]', `${SITE_URL}image.png`, { property: 'og:image' });
-  setMeta('meta[name="twitter:title"]', HOME_TITLE, { name: 'twitter:title' });
-  setMeta('meta[name="twitter:description"]', HOME_DESCRIPTION, { name: 'twitter:description' });
-  setMeta('meta[name="twitter:image"]', `${SITE_URL}image.png`, { name: 'twitter:image' });
+  setSocialMeta({
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    url: SITE_URL,
+    image: DEFAULT_OG_IMAGE,
+    type: 'website',
+    imageAlt: 'AnimeFLV - Ver anime online en español latino',
+    imageWidth: 1200,
+    imageHeight: 630
+  });
+  setLinkRelation('prev', '');
+  setLinkRelation('next', '');
+  setBaseSiteSchema();
+  removeJsonLd('anime-schema');
+  removeJsonLd('episode-schema');
+}
+
+function updateCollectionSEO(section, titleText, items = [], totalItems = items.length, page = 1) {
+  const isHome = section === 'inicio';
+  const cleanTitle = titleText === 'Ultimos episodios' ? 'Últimos episodios' : titleText;
+  const url = isHome
+    ? SITE_URL
+    : toAbsoluteUrl(`/?section=${encodeURIComponent(section)}${section === 'directorio' && page > 1 ? `&page=${page}` : ''}`);
+  const title = isHome ? HOME_TITLE : `${cleanTitle} Anime Online HD en Español Latino | ${SITE_NAME}`;
+  const description = isHome
+    ? HOME_DESCRIPTION
+    : compactText(`${cleanTitle} en AnimeFLV: explora ${totalItems || 'nuevos'} animes, episodios online en HD, series actualizadas y capítulos disponibles en español latino.`, HOME_DESCRIPTION, 158);
+
+  document.title = title;
+  setCanonical(url);
+  setRobots();
+  setMeta('meta[name="description"]', description, { name: 'description' });
+  setMeta('meta[name="keywords"]', `${cleanTitle}, anime online, ver anime online, anime latino, episodios anime, AnimeFLV`, { name: 'keywords' });
+  setSocialMeta({
+    title,
+    description,
+    url,
+    image: DEFAULT_OG_IMAGE,
+    type: 'website',
+    imageWidth: 1200,
+    imageHeight: 630
+  });
+  const totalPages = section === 'directorio' ? Math.max(1, Math.ceil(totalItems / DIRECTORY_PAGE_SIZE)) : 1;
+  setLinkRelation('prev', section === 'directorio' && page > 1
+    ? toAbsoluteUrl(`/?section=directorio${page > 2 ? `&page=${page - 1}` : ''}`)
+    : '');
+  setLinkRelation('next', section === 'directorio' && page < totalPages
+    ? toAbsoluteUrl(`/?section=directorio&page=${page + 1}`)
+    : '');
+  setBaseSiteSchema();
+  removeJsonLd('anime-schema');
+  removeJsonLd('episode-schema');
+  setJsonLd('collection-schema', {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: title,
+    description,
+    url,
+    inLanguage: 'es-419',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: SITE_NAME,
+      url: SITE_URL
+    },
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: items.length,
+      itemListElement: items.slice(0, 20).map((anime, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: toAbsoluteUrl(getAnimeUrl(anime, animesData.indexOf(anime))),
+        name: anime.titulo
+      }))
+    }
+  });
 }
 
 function getSocialNetwork(url) {
@@ -235,32 +383,158 @@ function renderSocialStrip() {
 
 function updateAnimeSEO(index, anime) {
   const title = `${anime.titulo} - Ver Anime Online HD en Latino | ${SITE_NAME}`;
-  const description = `${anime.titulo}: ver anime online en HD y español latino en AnimeFLV. ${anime.descripcion || 'Episodios recientes, estrenos, animes en emisión y series completas.'}`.slice(0, 155);
+  const description = getAnimeDescription(anime);
   const url = toAbsoluteUrl(getAnimeUrl(anime, index));
   const image = toAbsoluteUrl(safeImageUrl(anime.imagen));
+  const keywords = [
+    anime.titulo,
+    `ver ${anime.titulo} online`,
+    `${anime.titulo} español latino`,
+    ...(anime.generos || []),
+    'anime online',
+    'AnimeFLV'
+  ].filter(Boolean).join(', ');
 
   document.title = title;
   setCanonical(url);
+  setRobots();
   setMeta('meta[name="description"]', description, { name: 'description' });
-  setMeta('meta[property="og:type"]', 'video.tv_show', { property: 'og:type' });
-  setMeta('meta[property="og:title"]', title, { property: 'og:title' });
-  setMeta('meta[property="og:description"]', description, { property: 'og:description' });
-  setMeta('meta[property="og:url"]', url, { property: 'og:url' });
-  setMeta('meta[property="og:image"]', image, { property: 'og:image' });
-  setMeta('meta[name="twitter:title"]', title, { name: 'twitter:title' });
-  setMeta('meta[name="twitter:description"]', description, { name: 'twitter:description' });
-  setMeta('meta[name="twitter:image"]', image, { name: 'twitter:image' });
+  setMeta('meta[name="keywords"]', keywords, { name: 'keywords' });
+  setSocialMeta({
+    title,
+    description,
+    url,
+    image,
+    type: 'video.tv_show',
+    imageAlt: `${anime.titulo} poster`
+  });
+  setLinkRelation('prev', '');
+  setLinkRelation('next', '');
+  setBaseSiteSchema();
+  removeJsonLd('collection-schema');
+  removeJsonLd('episode-schema');
 
   setJsonLd('anime-schema', {
     '@context': 'https://schema.org',
-    '@type': 'TVSeries',
-    name: anime.titulo,
+    '@graph': [{
+      '@type': 'TVSeries',
+      '@id': `${url}#series`,
+      name: anime.titulo,
+      description,
+      image,
+      url,
+      inLanguage: 'es-419',
+      genre: anime.generos || [],
+      numberOfEpisodes: Array.isArray(anime.capitulos) ? anime.capitulos.length : 0,
+      datePublished: anime.year ? String(anime.year) : undefined,
+      dateModified: anime.updated_at || anime.created_at,
+      potentialAction: {
+        '@type': 'WatchAction',
+        target: url
+      }
+    }, {
+      '@type': 'BreadcrumbList',
+      itemListElement: [{
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Inicio',
+        item: SITE_URL
+      }, {
+        '@type': 'ListItem',
+        position: 2,
+        name: anime.titulo,
+        item: url
+      }]
+    }]
+  });
+}
+
+function updateEpisodeSEO(index, anime, chapterIndex) {
+  const chapter = anime?.capitulos?.[chapterIndex];
+  if (!anime) return;
+  if (!chapter) return updateAnimeSEO(index, anime);
+
+  const number = getChapterNumberValue(chapter);
+  const title = `${anime.titulo} Episodio ${number} - Ver Online HD en Latino | ${SITE_NAME}`;
+  const description = compactText(`Mira ${anime.titulo} episodio ${number} online en HD y español latino en ${SITE_NAME}. Reproduce el capítulo completo y revisa más episodios de ${anime.titulo}.`, HOME_DESCRIPTION, 158);
+  const url = toAbsoluteUrl(getChapterUrl(anime, index, chapterIndex));
+  const previewImage = safeImageUrl(getChapterPreviewImage(chapter, anime) || anime.imagen);
+  const image = toAbsoluteUrl(previewImage.startsWith('data:image/') ? safeImageUrl(anime.imagen) : previewImage);
+  const embedUrl = safeEmbedUrl(getChapterServer(chapter, 0)?.embed || '');
+
+  document.title = title;
+  setCanonical(url);
+  setRobots();
+  setMeta('meta[name="description"]', description, { name: 'description' });
+  setMeta('meta[name="keywords"]', `${anime.titulo} episodio ${number}, ver ${anime.titulo} ${number}, anime online latino, ${anime.titulo}, AnimeFLV`, { name: 'keywords' });
+  setSocialMeta({
+    title,
     description,
-    image,
     url,
-    inLanguage: 'es',
-    genre: anime.generos || [],
-    numberOfEpisodes: Array.isArray(anime.capitulos) ? anime.capitulos.length : 0
+    image,
+    type: 'video.episode',
+    imageAlt: `${anime.titulo} episodio ${number}`
+  });
+  setLinkRelation('prev', chapterIndex > 0 ? toAbsoluteUrl(getChapterUrl(anime, index, chapterIndex - 1)) : '');
+  setLinkRelation('next', chapterIndex < anime.capitulos.length - 1 ? toAbsoluteUrl(getChapterUrl(anime, index, chapterIndex + 1)) : '');
+  setBaseSiteSchema();
+  removeJsonLd('collection-schema');
+  removeJsonLd('anime-schema');
+  const animeUrl = toAbsoluteUrl(getAnimeUrl(anime, index));
+  const episodeId = `${url}#episode`;
+  const videoId = `${url}#video`;
+  setJsonLd('episode-schema', {
+    '@context': 'https://schema.org',
+    '@graph': [{
+      '@type': 'TVEpisode',
+      '@id': episodeId,
+      name: `${anime.titulo} Episodio ${number}`,
+      episodeNumber: String(number),
+      description,
+      image,
+      url,
+      inLanguage: 'es-419',
+      datePublished: chapter.created_at || chapter.updated_at,
+      dateModified: chapter.updated_at || chapter.created_at,
+      partOfSeries: {
+        '@type': 'TVSeries',
+        '@id': `${animeUrl}#series`,
+        name: anime.titulo,
+        url: animeUrl
+      },
+      associatedMedia: embedUrl ? { '@id': videoId } : undefined,
+      potentialAction: {
+        '@type': 'WatchAction',
+        target: url
+      }
+    }, ...(embedUrl ? [{
+      '@type': 'VideoObject',
+      '@id': videoId,
+      name: `${anime.titulo} Episodio ${number}`,
+      description,
+      thumbnailUrl: image,
+      embedUrl,
+      uploadDate: chapter.created_at || chapter.updated_at || anime.created_at || anime.updated_at,
+      inLanguage: 'es-419'
+    }] : []), {
+      '@type': 'BreadcrumbList',
+      itemListElement: [{
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Inicio',
+        item: SITE_URL
+      }, {
+        '@type': 'ListItem',
+        position: 2,
+        name: anime.titulo,
+        item: animeUrl
+      }, {
+        '@type': 'ListItem',
+        position: 3,
+        name: `Episodio ${number}`,
+        item: url
+      }]
+    }]
   });
 }
 
@@ -306,7 +580,10 @@ function getSearchScore(anime, query) {
 }
 
 function getAnimeSlug(anime, animeIndex) {
-  return anime?.slug || slugify(anime?.titulo) || `anime-${animeIndex}`;
+  const titleSlug = slugify(anime?.titulo);
+  const storedSlug = slugify(anime?.slug);
+  const minimumUsefulLength = Math.min(3, titleSlug.length);
+  return (storedSlug.length >= minimumUsefulLength ? storedSlug : titleSlug) || `anime-${animeIndex}`;
 }
 
 function getAnimeUrl(anime, animeIndex) {
@@ -712,7 +989,6 @@ function renderHome(titleText = 'Últimos episodios') {
   const main = document.querySelector('main');
   if (!main) return;
   main.innerHTML = `
-    <h1 class="sr-only">AnimeFLV - Ver anime online HD en español latino</h1>
     <div class="animeflv-layout">
       <aside class="home-sidebar" aria-label="Animes en emisión">
         <div class="home-sidebar-title">ANIMES EN EMISIÓN</div>
@@ -878,6 +1154,7 @@ async function renderSection(section = 'inicio', pushState = false, page = 1) {
   renderDirectoryPagination(section === 'directorio' ? totalItems : 0, currentPage);
   setActiveNavById(section);
   updateSectionHistory(section, content.title, pushState, currentPage);
+  updateCollectionSEO(section, content.title, visibleItems, totalItems, currentPage);
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
@@ -1029,9 +1306,9 @@ async function loadChaptersForAnimes(animes) {
   if (!titles.length) return animes;
 
   const params = new URLSearchParams({
-    select: 'anime_title,chapter_number,embed_url,cover_image,server_name,downloads,publish_status,sections,created_at,updated_at',
+    select: 'id,anime_title,chapter_number,embed_url,cover_image,server_name,downloads,publish_status,sections,created_at,updated_at',
     anime_title: `in.${buildInFilter(titles)}`,
-    order: 'chapter_number.asc'
+    order: 'chapter_number.asc,id.asc'
   });
 
   let chapters = [];
@@ -1039,9 +1316,9 @@ async function loadChaptersForAnimes(animes) {
     chapters = await fetchAllSupabaseRows('anime_chapters', params);
   } catch {
     const fallbackParams = new URLSearchParams({
-      select: 'anime_title,chapter_number,embed_url,cover_image,server_name,created_at',
+      select: 'id,anime_title,chapter_number,embed_url,cover_image,server_name,created_at',
       anime_title: `in.${buildInFilter(titles)}`,
-      order: 'chapter_number.asc'
+      order: 'chapter_number.asc,id.asc'
     });
     try {
       chapters = await fetchAllSupabaseRows('anime_chapters', fallbackParams);
@@ -1063,21 +1340,21 @@ async function loadChaptersForAnimes(animes) {
 }
 
 function getAnimeSelectFields() {
-  return 'titulo,image_url,banner_image,descripcion,year,estado,generos,slug,publish_status,sections,sort_order,created_at,updated_at';
+  return 'id,titulo,image_url,banner_image,descripcion,year,estado,generos,slug,publish_status,sections,sort_order,created_at,updated_at';
 }
 
 async function loadGlobalChapters() {
   const params = new URLSearchParams({
-    select: 'anime_title,chapter_number,embed_url,cover_image,server_name,downloads,publish_status,sections,created_at,updated_at',
-    order: 'chapter_number.asc'
+    select: 'id,anime_title,chapter_number,embed_url,cover_image,server_name,downloads,publish_status,sections,created_at,updated_at',
+    order: 'chapter_number.asc,id.asc'
   });
 
   try {
     return await fetchAllSupabaseRows('anime_chapters', params);
   } catch {
     const fallbackParams = new URLSearchParams({
-      select: 'anime_title,chapter_number,embed_url,cover_image,server_name,created_at',
-      order: 'chapter_number.asc'
+      select: 'id,anime_title,chapter_number,embed_url,cover_image,server_name,created_at',
+      order: 'chapter_number.asc,id.asc'
     });
     try {
       return await fetchAllSupabaseRows('anime_chapters', fallbackParams);
@@ -1090,8 +1367,8 @@ async function loadGlobalChapters() {
 
 async function loadGlobalAnimes() {
   const params = new URLSearchParams({
-    select: 'titulo,image_url,banner_image,descripcion,year,estado,generos,slug,publish_status,sections,sort_order,created_at',
-    order: 'created_at.desc'
+    select: 'id,titulo,image_url,banner_image,descripcion,year,estado,generos,slug,publish_status,sections,sort_order,created_at',
+    order: 'created_at.desc,id.asc'
   });
 
   try {
@@ -1113,8 +1390,8 @@ async function loadGlobalAnimes() {
     }));
   } catch {
     const fallbackParams = new URLSearchParams({
-      select: 'titulo,image_url,descripcion,year,estado,generos,created_at',
-      order: 'created_at.desc'
+      select: 'id,titulo,image_url,descripcion,year,estado,generos,created_at',
+      order: 'created_at.desc,id.asc'
     });
     let fallbackAnimes = [];
     try {
@@ -1158,7 +1435,7 @@ async function loadHomeAnimesPage() {
     select: getAnimeSelectFields(),
     publish_status: 'eq.published',
     or: '(sections.cs.{inicio},sections.cs.{destacados})',
-    order: 'updated_at.desc.nullslast,created_at.desc'
+    order: 'updated_at.desc.nullslast,created_at.desc,id.asc'
   });
   return loadAnimesPage(params, { limit: HOME_ANIME_LIMIT, offset: 0 });
 }
@@ -1169,7 +1446,7 @@ async function loadDirectoryAnimesPage(page = 1) {
     select: getAnimeSelectFields(),
     publish_status: 'eq.published',
     sections: 'cs.{directorio}',
-    order: 'titulo.asc'
+    order: 'titulo.asc,id.asc'
   });
   let result = await loadAnimesPage(params, { limit: DIRECTORY_PAGE_SIZE, offset, count: true });
 
@@ -1177,7 +1454,7 @@ async function loadDirectoryAnimesPage(page = 1) {
     const fallbackParams = new URLSearchParams({
       select: getAnimeSelectFields(),
       publish_status: 'eq.published',
-      order: 'titulo.asc'
+      order: 'titulo.asc,id.asc'
     });
     result = await loadAnimesPage(fallbackParams, { limit: DIRECTORY_PAGE_SIZE, offset, count: true });
   }
@@ -1190,7 +1467,7 @@ async function loadLatinoAnimesPage() {
     select: getAnimeSelectFields(),
     publish_status: 'eq.published',
     or: '(sections.cs.{latino},titulo.ilike.*latino*,titulo.ilike.*latam*,titulo.ilike.*castellano*)',
-    order: 'updated_at.desc.nullslast,created_at.desc'
+    order: 'updated_at.desc.nullslast,created_at.desc,id.asc'
   });
   return loadAnimesPage(params, { limit: HOME_ANIME_LIMIT, offset: 0 });
 }
@@ -1203,7 +1480,7 @@ async function searchAnimes(query) {
     select: getAnimeSelectFields(),
     publish_status: 'eq.published',
     or: `(titulo.ilike.*${cleanQuery}*,slug.ilike.*${slugify(cleanQuery)}*)`,
-    order: 'updated_at.desc.nullslast,created_at.desc'
+    order: 'updated_at.desc.nullslast,created_at.desc,id.asc'
   });
   const { items } = await loadAnimesPage(params, { limit: SEARCH_RESULT_LIMIT, offset: 0 });
   return items
@@ -1221,11 +1498,27 @@ async function loadAnimeBySlug(slug) {
   const params = new URLSearchParams({
     select: getAnimeSelectFields(),
     publish_status: 'eq.published',
-    slug: `eq.${slug}`,
+    slug: `ilike.${slug}`,
     limit: '1'
   });
 
-  const { rows } = await fetchSupabaseRows('animes', params, { limit: 1 });
+  let { rows } = await fetchSupabaseRows('animes', params, { limit: 1 });
+  if (!rows.length) {
+    const titlePattern = String(slug).replace(/[^a-z0-9-]/gi, '').split('-').filter(Boolean).join('*');
+    if (titlePattern) {
+      const titleParams = new URLSearchParams({
+        select: getAnimeSelectFields(),
+        publish_status: 'eq.published',
+        titulo: `ilike.*${titlePattern}*`,
+        limit: '25'
+      });
+      const fallback = await fetchSupabaseRows('animes', titleParams, { limit: 25 });
+      rows = fallback.rows.filter(row => {
+        const candidate = mapSupabaseAnime(row);
+        return getAnimeSlug(candidate, -1) === slug || slugify(candidate.titulo) === slug;
+      }).slice(0, 1);
+    }
+  }
   const anime = rows[0] ? mapSupabaseAnime(rows[0]) : null;
   if (!anime || !anime.imagen || anime.imagen.toLowerCase().includes('placeholder')) return -1;
 
@@ -1241,7 +1534,7 @@ async function loadCarouselAnimes() {
     select: getAnimeSelectFields(),
     publish_status: 'eq.published',
     sections: 'cs.{destacados}',
-    order: 'sort_order.desc,updated_at.desc.nullslast,created_at.desc'
+    order: 'sort_order.desc,updated_at.desc.nullslast,created_at.desc,id.asc'
   });
 
   try {
@@ -1678,6 +1971,11 @@ function mostrarAnime(index, pushState = true, requestedChapterIndex = null) {
   const primerCap = selectedServer ? safeEmbedUrl(selectedServer.embed) : "";
   const currentChapter = chapters[currentChapterIndex];
   const recommendedAnimes = getRecommendedAnimes(anime, index, 6);
+  if (currentChapter) {
+    updateEpisodeSEO(index, anime, currentChapterIndex);
+  } else {
+    updateAnimeSEO(index, anime);
+  }
 
   main.innerHTML = `
     <div class="anime-detail">
@@ -1969,6 +2267,9 @@ window.cambiarCapitulo = function(embedUrl, titulo, idx) {
   renderServerSelector(chapter, 0);
   renderDownloadSection(chapter);
   updateChapterUrl(idx);
+  if (currentAnimeIndex !== null) {
+    updateEpisodeSEO(currentAnimeIndex, anime, idx);
+  }
   if (currentAnimeIndex !== null) {
     loadCommentsForChapter(currentAnimeIndex, idx);
   }
