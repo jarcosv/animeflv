@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" type="image/png" href="/images/favicon.png">
   <link rel="apple-touch-icon" href="/images/favicon.png">
-  <link rel="stylesheet" href="/style.css?v=animeflv-skin-1">
+  <link rel="stylesheet" href="/style.css?v=animeflv-skin-2">
 </head>
 <body class="admin-page">
   <header>
@@ -262,6 +262,70 @@
       </form>
       </div>
 
+      <div id="facebook-groups-section" class="admin-section">
+        <div class="admin-section-head">
+          <h2>Distribucion a grupos de Facebook</h2>
+          <span id="facebook-distribution-progress" class="admin-help">0 de 0 publicados</span>
+        </div>
+
+        <form id="facebook-group-form" class="admin-form admin-grid facebook-group-form">
+          <div>
+            <label for="facebook-group-name">Nombre del grupo</label>
+            <input id="facebook-group-name" type="text" maxlength="100" placeholder="Anime Latino" required>
+          </div>
+          <div>
+            <label for="facebook-group-url">URL del grupo</label>
+            <input id="facebook-group-url" type="url" placeholder="https://www.facebook.com/groups/..." required>
+          </div>
+          <div class="admin-actions admin-wide">
+            <button id="save-facebook-group" type="submit">Guardar grupo</button>
+            <button id="cancel-facebook-group-edit" class="admin-secondary hidden" type="button">Cancelar edicion</button>
+          </div>
+        </form>
+
+        <form id="facebook-groups-bulk-form" class="admin-form facebook-groups-bulk-form">
+          <label for="facebook-groups-bulk">Pegar lista de grupos</label>
+          <textarea id="facebook-groups-bulk" rows="4" spellcheck="false" placeholder="Anime Latino | https://www.facebook.com/groups/anime.latino&#10;https://www.facebook.com/groups/otro.grupo"></textarea>
+          <button type="submit">Importar lista</button>
+        </form>
+
+        <div class="facebook-distribution-editor">
+          <div>
+            <label for="facebook-distribution-episode">Episodio para compartir</label>
+            <select id="facebook-distribution-episode"></select>
+          </div>
+          <div>
+            <label for="facebook-distribution-link">Enlace con vista previa</label>
+            <input id="facebook-distribution-link" type="url" readonly>
+          </div>
+          <div class="admin-wide">
+            <label for="facebook-distribution-message">Publicacion</label>
+            <textarea id="facebook-distribution-message" rows="6"></textarea>
+          </div>
+          <div class="admin-actions admin-wide">
+            <button id="copy-facebook-publication" class="admin-secondary" type="button">Copiar publicacion</button>
+            <button id="open-next-facebook-group" class="admin-secondary" type="button">Abrir siguiente grupo</button>
+            <button id="reset-facebook-distribution" class="admin-secondary" type="button">Reiniciar ronda</button>
+          </div>
+        </div>
+
+        <p id="facebook-distribution-message-status" class="admin-message" aria-live="polite"></p>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table facebook-groups-table">
+            <thead>
+              <tr>
+                <th>Grupo</th>
+                <th>Estado</th>
+                <th>Ultima accion</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="facebook-groups-table"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="admin-section">
         <h2>Importar episodios masivos</h2>
         <form id="bulk-import-form" class="admin-form">
@@ -377,6 +441,6 @@
     </section>
   </main>
 
-  <script src="/admin.js?v=animeflv-skin-1"></script>
+  <script src="/admin.js?v=animeflv-skin-2"></script>
 </body>
 </html>

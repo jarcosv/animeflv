@@ -1,5 +1,6 @@
 const SUPABASE_URL = 'https://vanmxvfhagqfbwynpwzt.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_c4fIwf42U_W18zJH2RkS1w_1UB2PeZO';
+const SITE_URL = 'https://animeflv.lat';
 const SUPABASE_HEADERS = {
   apikey: SUPABASE_KEY,
   Authorization: `Bearer ${SUPABASE_KEY}`,
@@ -32,6 +33,9 @@ const BULK_IMPORT_UI_CHUNK_SIZE = 250;
 const BULK_IMPORT_WORKER_URL = '/bulk-import-worker.js?v=rem-blue-worker-5';
 const CAROUSEL_LIMIT = 4;
 const CAROUSEL_SIZE_STORAGE_KEY = 'animeflv-carousel-image-size';
+const FACEBOOK_GROUPS_STORAGE_KEY = 'animeflv-facebook-groups-v1';
+const FACEBOOK_GROUP_PROGRESS_STORAGE_KEY = 'animeflv-facebook-group-progress-v1';
+const FACEBOOK_EPISODE_STORAGE_KEY = 'animeflv-facebook-distribution-episode-v1';
 
 const adminLock = document.getElementById('admin-lock');
 const adminContent = document.getElementById('admin-content');
@@ -99,10 +103,31 @@ const clearCarouselFormButton = document.getElementById('clear-carousel-form');
 const carouselImageSizeInput = document.getElementById('carousel-image-size');
 const carouselImageSizeValue = document.getElementById('carousel-image-size-value');
 const saveCarouselSettingsButton = document.getElementById('save-carousel-settings');
+const facebookGroupsSection = document.getElementById('facebook-groups-section');
+const facebookGroupForm = document.getElementById('facebook-group-form');
+const facebookGroupName = document.getElementById('facebook-group-name');
+const facebookGroupUrl = document.getElementById('facebook-group-url');
+const saveFacebookGroupButton = document.getElementById('save-facebook-group');
+const cancelFacebookGroupEditButton = document.getElementById('cancel-facebook-group-edit');
+const facebookGroupsBulkForm = document.getElementById('facebook-groups-bulk-form');
+const facebookGroupsBulk = document.getElementById('facebook-groups-bulk');
+const facebookDistributionEpisode = document.getElementById('facebook-distribution-episode');
+const facebookDistributionLink = document.getElementById('facebook-distribution-link');
+const facebookDistributionMessage = document.getElementById('facebook-distribution-message');
+const facebookDistributionProgress = document.getElementById('facebook-distribution-progress');
+const facebookDistributionMessageStatus = document.getElementById('facebook-distribution-message-status');
+const facebookGroupsTable = document.getElementById('facebook-groups-table');
+const copyFacebookPublicationButton = document.getElementById('copy-facebook-publication');
+const openNextFacebookGroupButton = document.getElementById('open-next-facebook-group');
+const resetFacebookDistributionButton = document.getElementById('reset-facebook-distribution');
 
 let pendingBulkImportRows = [];
 let publishedEpisodeCountByTitle = new Map();
 let selectedCarouselAnimeTitle = '';
+let facebookGroups = [];
+let facebookGroupProgress = {};
+let facebookDistributionEpisodesByKey = new Map();
+let editingFacebookGroupId = '';
 let carouselSettings = {
   imageSize: Math.min(90, Math.max(28, Number(localStorage.getItem(CAROUSEL_SIZE_STORAGE_KEY)) || 42))
 };
@@ -389,6 +414,13 @@ function slugify(value) {
     .slice(0, 90);
 }
 
+function canonicalSlug(title, storedSlug) {
+  const titleSlug = slugify(title);
+  const candidate = slugify(storedSlug);
+  const minimumUsefulLength = Math.min(3, titleSlug.length);
+  return candidate.length >= minimumUsefulLength ? candidate : titleSlug;
+}
+
 function getCheckedValues(name) {
   return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
     .map(input => input.value);
@@ -431,10 +463,120 @@ function cleanPublishStatus(value) {
   return PUBLISH_STATUS_VALUES.includes(value) ? value : 'published';
 }
 
+function readLocalJson(key, fallback) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || 'null');
+    return value ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function normalizeFacebookGroupUrl(value) {
+  try {
+    const raw = String(value || '').trim();
+    const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw.replace(/^\/+/, '')}`);
+    const host = url.hostname.toLowerCase().replace(/^(?:www\.|m\.|web\.)/, '');
+    const match = url.pathname.match(/^\/groups\/([^/?#]+)/i);
+    if (!['facebook.com', 'fb.com'].includes(host) || !match) return '';
+    return `https://www.facebook.com/groups/${encodeURIComponent(decodeURIComponent(match[1]))}/`;
+  } catch {
+    return '';
+  }
+}
+
+function createFacebookGroupId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `group-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function getFacebookGroupNameFromUrl(url) {
+  try {
+    const segment = new URL(url).pathname.split('/').filter(Boolean)[1] || 'Grupo de Facebook';
+    return decodeURIComponent(segment).replace(/[._-]+/g, ' ').trim() || 'Grupo de Facebook';
+  } catch {
+    return 'Grupo de Facebook';
+  }
+}
+
+function loadFacebookDistributionState() {
+  const storedGroups = readLocalJson(FACEBOOK_GROUPS_STORAGE_KEY, []);
+  facebookGroups = Array.isArray(storedGroups)
+    ? storedGroups.map(group => ({
+        id: String(group.id || createFacebookGroupId()),
+        name: String(group.name || '').trim(),
+        url: normalizeFacebookGroupUrl(group.url)
+      })).filter(group => group.url)
+    : [];
+  const storedProgress = readLocalJson(FACEBOOK_GROUP_PROGRESS_STORAGE_KEY, {});
+  facebookGroupProgress = storedProgress && typeof storedProgress === 'object' && !Array.isArray(storedProgress)
+    ? storedProgress
+    : {};
+}
+
+function saveFacebookGroups() {
+  localStorage.setItem(FACEBOOK_GROUPS_STORAGE_KEY, JSON.stringify(facebookGroups));
+}
+
+function saveFacebookGroupProgress() {
+  localStorage.setItem(FACEBOOK_GROUP_PROGRESS_STORAGE_KEY, JSON.stringify(facebookGroupProgress));
+}
+
+function getFacebookEpisodeKey(title, number) {
+  return `${encodeURIComponent(String(title || ''))}::${encodeURIComponent(String(number ?? ''))}`;
+}
+
+function getFacebookDistributionEpisodes() {
+  const episodes = new Map();
+  globalChapters.forEach(chapter => {
+    if (!chapter.anime_title || !isPublished(chapter)) return;
+    const key = getFacebookEpisodeKey(chapter.anime_title, chapter.chapter_number);
+    const current = episodes.get(key);
+    if (!current || Date.parse(chapter.created_at || '') > Date.parse(current.created_at || '')) {
+      episodes.set(key, chapter);
+    }
+  });
+
+  return Array.from(episodes.values())
+    .sort((a, b) => {
+      const dateDifference = Date.parse(b.created_at || '') - Date.parse(a.created_at || '');
+      if (Number.isFinite(dateDifference) && dateDifference !== 0) return dateDifference;
+      const titleDifference = String(a.anime_title).localeCompare(String(b.anime_title), 'es');
+      if (titleDifference !== 0) return titleDifference;
+      return Number(b.chapter_number) - Number(a.chapter_number);
+    })
+    .slice(0, 300);
+}
+
+function getSelectedFacebookEpisode() {
+  return facebookDistributionEpisodesByKey.get(facebookDistributionEpisode?.value || '') || null;
+}
+
+function getFacebookEpisodeLink(episode) {
+  if (!episode) return '';
+  const anime = globalAnimes.find(item => item.titulo === episode.anime_title);
+  const slug = canonicalSlug(episode.anime_title, anime?.slug);
+  return `${SITE_URL}/ver/${encodeURIComponent(slug)}-episodio-${encodeURIComponent(String(episode.chapter_number))}`;
+}
+
+function buildFacebookDistributionMessage(episode, link) {
+  if (!episode || !link) return '';
+  return `${episode.anime_title} - Episodio ${episode.chapter_number} ya disponible en AnimeFLV\n\nMiralo aqui:\n${link}\n\n#Anime #AnimeFLV`;
+}
+
+function getFacebookProgressKey(episodeKey, groupId) {
+  return `${episodeKey}::${groupId}`;
+}
+
+function getFacebookGroupState(groupId) {
+  const episodeKey = facebookDistributionEpisode?.value || '';
+  return facebookGroupProgress[getFacebookProgressKey(episodeKey, groupId)] || {};
+}
+
 async function publishChapterToFacebook(animeTitle, chapterNumber) {
   const session = getAdminSession();
   if (!session?.access_token) {
-    throw new Error('No hay sesión de administrador válida para publicar en Facebook.');
+    throw new Error('No hay una sesion de administrador valida para publicar en Facebook.');
   }
 
   const response = await fetch('/api/facebook-post', {
@@ -445,13 +587,291 @@ async function publishChapterToFacebook(animeTitle, chapterNumber) {
     },
     body: JSON.stringify({ anime_title: animeTitle, chapter_number: chapterNumber })
   });
+  const result = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Facebook publish failed: ${text}`);
+    throw new Error(result.error || 'Facebook rechazo la publicacion.');
   }
 
-  return response.json();
+  return result;
+}
+
+function setFacebookDistributionStatus(text, type = '') {
+  if (!facebookDistributionMessageStatus) return;
+  facebookDistributionMessageStatus.textContent = text;
+  facebookDistributionMessageStatus.className = `admin-message ${type}`;
+}
+
+function renderFacebookDistributionEpisodes(preferredKey = '') {
+  if (!facebookDistributionEpisode) return;
+  const episodes = getFacebookDistributionEpisodes();
+  facebookDistributionEpisodesByKey = new Map(
+    episodes.map(episode => [getFacebookEpisodeKey(episode.anime_title, episode.chapter_number), episode])
+  );
+
+  const previousKey = preferredKey
+    || facebookDistributionEpisode.value
+    || localStorage.getItem(FACEBOOK_EPISODE_STORAGE_KEY)
+    || '';
+  facebookDistributionEpisode.innerHTML = episodes.length
+    ? episodes.map(episode => {
+        const key = getFacebookEpisodeKey(episode.anime_title, episode.chapter_number);
+        return `<option value="${escapeHTML(key)}">${escapeHTML(episode.anime_title)} - Episodio ${escapeHTML(episode.chapter_number)}</option>`;
+      }).join('')
+    : '<option value="">No hay episodios publicados</option>';
+
+  if (facebookDistributionEpisodesByKey.has(previousKey)) {
+    facebookDistributionEpisode.value = previousKey;
+  }
+  facebookDistributionEpisode.disabled = episodes.length === 0;
+  updateFacebookDistributionEditor();
+}
+
+function updateFacebookDistributionEditor(forceMessage = false) {
+  const episode = getSelectedFacebookEpisode();
+  const episodeKey = facebookDistributionEpisode?.value || '';
+  const link = getFacebookEpisodeLink(episode);
+  if (facebookDistributionLink) facebookDistributionLink.value = link;
+
+  if (facebookDistributionMessage) {
+    const changedEpisode = facebookDistributionMessage.dataset.episodeKey !== episodeKey;
+    if (changedEpisode || forceMessage) {
+      facebookDistributionMessage.value = buildFacebookDistributionMessage(episode, link);
+      facebookDistributionMessage.dataset.episodeKey = episodeKey;
+    }
+  }
+
+  if (episodeKey) localStorage.setItem(FACEBOOK_EPISODE_STORAGE_KEY, episodeKey);
+  renderFacebookGroupsTable();
+}
+
+function renderFacebookGroupsTable() {
+  if (!facebookGroupsTable) return;
+  const episodeKey = facebookDistributionEpisode?.value || '';
+  let completedCount = 0;
+
+  facebookGroupsTable.innerHTML = facebookGroups.length
+    ? facebookGroups.map(group => {
+        const state = facebookGroupProgress[getFacebookProgressKey(episodeKey, group.id)] || {};
+        const completed = Boolean(state.completedAt);
+        const opened = Boolean(state.openedAt);
+        if (completed) completedCount += 1;
+        const statusClass = completed ? 'completed' : opened ? 'opened' : 'pending';
+        const statusLabel = completed ? 'Publicado' : opened ? 'Abierto' : 'Pendiente';
+        const lastAction = state.completedAt || state.openedAt;
+        return `
+          <tr>
+            <td>
+              <strong class="facebook-group-name">${escapeHTML(group.name || getFacebookGroupNameFromUrl(group.url))}</strong>
+              <a class="facebook-group-url" href="${escapeHTML(group.url)}" target="_blank" rel="noreferrer">${escapeHTML(group.url)}</a>
+            </td>
+            <td><span class="facebook-distribution-status ${statusClass}">${statusLabel}</span></td>
+            <td>${lastAction ? escapeHTML(formatAdminDate(lastAction)) : '-'}</td>
+            <td>
+              <button class="admin-secondary" data-open-facebook-group="${escapeHTML(group.id)}">Copiar y abrir</button>
+              <button class="admin-secondary" data-toggle-facebook-group="${escapeHTML(group.id)}">${completed ? 'Desmarcar' : 'Marcar publicado'}</button>
+              <button class="admin-secondary" data-edit-facebook-group="${escapeHTML(group.id)}">Editar</button>
+              <button class="admin-delete" data-delete-facebook-group="${escapeHTML(group.id)}">Borrar</button>
+            </td>
+          </tr>`;
+      }).join('')
+    : '<tr><td colspan="4">No hay grupos guardados.</td></tr>';
+
+  if (facebookDistributionProgress) {
+    facebookDistributionProgress.textContent = `${completedCount} de ${facebookGroups.length} publicados`;
+  }
+  if (openNextFacebookGroupButton) {
+    openNextFacebookGroupButton.disabled = !episodeKey || !facebookGroups.length || completedCount === facebookGroups.length;
+  }
+  if (copyFacebookPublicationButton) copyFacebookPublicationButton.disabled = !episodeKey;
+  if (resetFacebookDistributionButton) resetFacebookDistributionButton.disabled = !episodeKey || !facebookGroups.length;
+}
+
+function getFacebookPublicationText() {
+  const message = String(facebookDistributionMessage?.value || '').trim();
+  const link = String(facebookDistributionLink?.value || '').trim();
+  if (!link) throw new Error('Selecciona un episodio publicado.');
+  return message.includes(link) ? message : `${message}\n\n${link}`.trim();
+}
+
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch {
+      // Continue with the selection fallback below.
+    }
+  }
+  const helper = document.createElement('textarea');
+  helper.value = text;
+  helper.setAttribute('readonly', '');
+  helper.style.position = 'fixed';
+  helper.style.opacity = '0';
+  document.body.appendChild(helper);
+  helper.select();
+  document.execCommand('copy');
+  helper.remove();
+}
+
+async function copyFacebookPublication() {
+  await copyTextToClipboard(getFacebookPublicationText());
+  setFacebookDistributionStatus('Publicacion copiada.', 'success');
+}
+
+async function openFacebookGroup(groupId) {
+  const group = facebookGroups.find(item => item.id === groupId);
+  if (!group) throw new Error('Grupo no encontrado.');
+  const publication = getFacebookPublicationText();
+  window.open(group.url, '_blank', 'noopener,noreferrer');
+  await copyTextToClipboard(publication);
+  const key = getFacebookProgressKey(facebookDistributionEpisode.value, group.id);
+  facebookGroupProgress[key] = {
+    ...facebookGroupProgress[key],
+    openedAt: new Date().toISOString()
+  };
+  saveFacebookGroupProgress();
+  renderFacebookGroupsTable();
+  setFacebookDistributionStatus(`${group.name}: publicacion copiada y grupo abierto.`, 'success');
+}
+
+async function openNextFacebookGroup() {
+  const nextGroup = facebookGroups.find(group => !getFacebookGroupState(group.id).completedAt);
+  if (!nextGroup) {
+    setFacebookDistributionStatus('Todos los grupos estan marcados como publicados.', 'success');
+    return;
+  }
+  await openFacebookGroup(nextGroup.id);
+}
+
+function toggleFacebookGroupCompleted(groupId) {
+  const episodeKey = facebookDistributionEpisode?.value || '';
+  if (!episodeKey) return;
+  const key = getFacebookProgressKey(episodeKey, groupId);
+  const current = facebookGroupProgress[key] || {};
+  if (current.completedAt) {
+    facebookGroupProgress[key] = { ...current, completedAt: '' };
+  } else {
+    facebookGroupProgress[key] = {
+      ...current,
+      openedAt: current.openedAt || new Date().toISOString(),
+      completedAt: new Date().toISOString()
+    };
+  }
+  saveFacebookGroupProgress();
+  renderFacebookGroupsTable();
+}
+
+function resetFacebookDistribution() {
+  const episodeKey = facebookDistributionEpisode?.value || '';
+  if (!episodeKey) return;
+  if (!window.confirm('Reiniciar el progreso de este episodio?')) return;
+  facebookGroups.forEach(group => {
+    delete facebookGroupProgress[getFacebookProgressKey(episodeKey, group.id)];
+  });
+  saveFacebookGroupProgress();
+  renderFacebookGroupsTable();
+  setFacebookDistributionStatus('Ronda reiniciada.', 'success');
+}
+
+function resetFacebookGroupForm() {
+  editingFacebookGroupId = '';
+  facebookGroupForm?.reset();
+  if (saveFacebookGroupButton) saveFacebookGroupButton.textContent = 'Guardar grupo';
+  cancelFacebookGroupEditButton?.classList.add('hidden');
+}
+
+function saveFacebookGroup(event) {
+  event.preventDefault();
+  const name = String(facebookGroupName?.value || '').trim();
+  const url = normalizeFacebookGroupUrl(facebookGroupUrl?.value);
+  if (!url) throw new Error('Usa una URL valida de facebook.com/groups/.');
+  const duplicate = facebookGroups.find(group => group.url === url && group.id !== editingFacebookGroupId);
+  if (duplicate) throw new Error('Ese grupo ya esta guardado.');
+
+  if (editingFacebookGroupId) {
+    facebookGroups = facebookGroups.map(group => group.id === editingFacebookGroupId
+      ? { ...group, name: name || getFacebookGroupNameFromUrl(url), url }
+      : group);
+  } else {
+    facebookGroups.push({
+      id: createFacebookGroupId(),
+      name: name || getFacebookGroupNameFromUrl(url),
+      url
+    });
+  }
+
+  saveFacebookGroups();
+  resetFacebookGroupForm();
+  renderFacebookGroupsTable();
+  setFacebookDistributionStatus('Grupo guardado.', 'success');
+}
+
+function parseFacebookGroupLine(line) {
+  const urlMatch = String(line || '').match(/https?:\/\/(?:www\.|m\.|web\.)?(?:facebook\.com|fb\.com)\/groups\/[^\s|]+/i);
+  if (!urlMatch) return null;
+  const url = normalizeFacebookGroupUrl(urlMatch[0]);
+  if (!url) return null;
+  const name = line.replace(urlMatch[0], '').replace(/^[\s|:;-]+|[\s|:;-]+$/g, '').trim();
+  return { name: name || getFacebookGroupNameFromUrl(url), url };
+}
+
+function importFacebookGroups(event) {
+  event.preventDefault();
+  const lines = String(facebookGroupsBulk?.value || '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  let imported = 0;
+  let skipped = 0;
+
+  lines.forEach(line => {
+    const parsed = parseFacebookGroupLine(line);
+    if (!parsed || facebookGroups.some(group => group.url === parsed.url)) {
+      skipped += 1;
+      return;
+    }
+    facebookGroups.push({ id: createFacebookGroupId(), ...parsed });
+    imported += 1;
+  });
+
+  saveFacebookGroups();
+  if (facebookGroupsBulk) facebookGroupsBulk.value = '';
+  renderFacebookGroupsTable();
+  setFacebookDistributionStatus(`${imported} grupos importados${skipped ? `, ${skipped} omitidos` : ''}.`, imported ? 'success' : 'error');
+}
+
+function editFacebookGroup(groupId) {
+  const group = facebookGroups.find(item => item.id === groupId);
+  if (!group) return;
+  editingFacebookGroupId = group.id;
+  facebookGroupName.value = group.name || '';
+  facebookGroupUrl.value = group.url;
+  saveFacebookGroupButton.textContent = 'Actualizar grupo';
+  cancelFacebookGroupEditButton?.classList.remove('hidden');
+  facebookGroupName.focus();
+}
+
+function deleteFacebookGroup(groupId) {
+  const group = facebookGroups.find(item => item.id === groupId);
+  if (!group) return;
+  if (!window.confirm(`Borrar ${group.name || 'este grupo'} de la lista?`)) return;
+  facebookGroups = facebookGroups.filter(item => item.id !== groupId);
+  Object.keys(facebookGroupProgress).forEach(key => {
+    if (key.endsWith(`::${groupId}`)) delete facebookGroupProgress[key];
+  });
+  saveFacebookGroups();
+  saveFacebookGroupProgress();
+  resetFacebookGroupForm();
+  renderFacebookGroupsTable();
+  setFacebookDistributionStatus('Grupo borrado.', 'success');
+}
+
+function selectFacebookDistributionEpisode(title, number, shouldScroll = false) {
+  const key = getFacebookEpisodeKey(title, number);
+  renderFacebookDistributionEpisodes(key);
+  if (facebookDistributionEpisodesByKey.has(key)) {
+    facebookDistributionEpisode.value = key;
+    updateFacebookDistributionEditor(true);
+  }
+  if (shouldScroll) facebookGroupsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function getAnimeSections(title = animeTitle?.value || '') {
@@ -1187,6 +1607,7 @@ async function refreshPanel() {
   setNextEpisodeNumber();
   renderChaptersTable();
   renderServerDeleteTable();
+  renderFacebookDistributionEpisodes();
 }
 
 function resetAnimeForm() {
@@ -1296,6 +1717,7 @@ async function saveAnime(event) {
 
 async function saveChapter(event) {
   event.preventDefault();
+  const wasEditing = Boolean(editingChapter);
   commitAnimePickerValue();
   setMessage(editingChapter ? 'Actualizando episodio...' : 'Guardando...');
   if (!animeSelect.value) {
@@ -1339,13 +1761,20 @@ async function saveChapter(event) {
   animeSelect.value = payload.anime_title;
   renderChaptersTable();
 
-  if (!editingChapter && payload.publish_status === 'published') {
+  if (!wasEditing && payload.publish_status === 'published') {
+    selectFacebookDistributionEpisode(payload.anime_title, payload.chapter_number, true);
+    setMessage('Episodio guardado. Publicando en Facebook...');
     try {
-      await publishChapterToFacebook(payload.anime_title, payload.chapter_number);
-      setMessage('Episodio guardado y publicado en Facebook.', 'success');
+      const facebookResult = await publishChapterToFacebook(payload.anime_title, payload.chapter_number);
+      const publishedCount = facebookResult.published?.length || 0;
+      const failedCount = facebookResult.failed?.length || 0;
+      const detail = failedCount
+        ? ` Publicado en ${publishedCount} pagina(s); fallo en ${failedCount}.`
+        : ` Publicado en ${publishedCount} pagina(s) de Facebook.`;
+      setMessage(`Episodio guardado.${detail} Publicacion preparada para tus grupos.`, failedCount ? 'warning' : 'success');
     } catch (error) {
       console.error('Facebook publish error:', error);
-      setMessage(`Episodio guardado. Error al publicar en Facebook: ${error.message}`, 'warning');
+      setMessage(`Episodio guardado, pero Facebook fallo: ${error.message}. La publicacion manual para grupos esta preparada.`, 'warning');
     }
   } else {
     setMessage('Episodio guardado.', 'success');
@@ -1994,25 +2423,13 @@ async function importBulkChapters(event) {
 
     const batch = Array.from(seen.values()).map(({ anime_cover, ...row }) => row);
     setMessage(`Importando servidores ${index + 1}-${Math.min(index + batch.length, resolvedRows.length)} de ${resolvedRows.length}...`);
-    const importedRows = await supabaseRequest('anime_chapters?on_conflict=anime_title,chapter_number,server_name', {
+    await supabaseRequest('anime_chapters?on_conflict=anime_title,chapter_number,server_name', {
       method: 'POST',
       headers: {
         Prefer: 'resolution=merge-duplicates,return=representation'
       },
       body: JSON.stringify(batch)
-    }) || [];
-
-    if (Array.isArray(importedRows) && importedRows.length) {
-      for (const row of importedRows) {
-        if (row.publish_status === 'published' && row.created_at && row.updated_at && row.created_at === row.updated_at) {
-          try {
-            await publishChapterToFacebook(row.anime_title, row.chapter_number);
-          } catch (error) {
-            console.error('Facebook publish error (bulk import):', error);
-          }
-        }
-      }
-    }
+    });
 
     await yieldToBrowser();
   }
@@ -2027,6 +2444,11 @@ async function importBulkChapters(event) {
     animeSelect.value = firstTitle;
     renderAnimesTable();
     renderChaptersTable();
+  }
+
+  const distributionRow = [...resolvedRows].reverse().find(row => row.publish_status === 'published');
+  if (distributionRow) {
+    selectFacebookDistributionEpisode(distributionRow.anime_title, distributionRow.chapter_number);
   }
 
   const createdText = createdTitles.length ? ` ${createdTitles.length} animes fueron creados con portada provisional.` : '';
@@ -2474,6 +2896,7 @@ async function initAdmin() {
       throw new Error('Inicia sesión para administrar.');
     }
     await verifyAdminUser(session.user.id);
+    loadFacebookDistributionState();
     await refreshPanel();
   } catch (error) {
     clearAdminSession();
@@ -2658,6 +3081,46 @@ bulkImportForm?.addEventListener('submit', event => {
     if (importBulkChaptersButton) importBulkChaptersButton.disabled = pendingBulkImportRows.length === 0;
     setMessage(`Error: ${error.message}`, 'error');
   });
+});
+
+facebookGroupForm?.addEventListener('submit', event => {
+  try {
+    saveFacebookGroup(event);
+  } catch (error) {
+    setFacebookDistributionStatus(`Error: ${error.message}`, 'error');
+  }
+});
+facebookGroupsBulkForm?.addEventListener('submit', event => {
+  try {
+    importFacebookGroups(event);
+  } catch (error) {
+    setFacebookDistributionStatus(`Error: ${error.message}`, 'error');
+  }
+});
+facebookDistributionEpisode?.addEventListener('change', () => updateFacebookDistributionEditor(true));
+copyFacebookPublicationButton?.addEventListener('click', () => {
+  copyFacebookPublication().catch(error => setFacebookDistributionStatus(`Error: ${error.message}`, 'error'));
+});
+openNextFacebookGroupButton?.addEventListener('click', () => {
+  openNextFacebookGroup().catch(error => setFacebookDistributionStatus(`Error: ${error.message}`, 'error'));
+});
+resetFacebookDistributionButton?.addEventListener('click', resetFacebookDistribution);
+cancelFacebookGroupEditButton?.addEventListener('click', resetFacebookGroupForm);
+
+facebookGroupsTable?.addEventListener('click', event => {
+  const button = event.target.closest('button');
+  if (!button) return;
+  const openId = button.dataset.openFacebookGroup;
+  const toggleId = button.dataset.toggleFacebookGroup;
+  const editId = button.dataset.editFacebookGroup;
+  const deleteId = button.dataset.deleteFacebookGroup;
+
+  if (openId) {
+    openFacebookGroup(openId).catch(error => setFacebookDistributionStatus(`Error: ${error.message}`, 'error'));
+  }
+  if (toggleId) toggleFacebookGroupCompleted(toggleId);
+  if (editId) editFacebookGroup(editId);
+  if (deleteId) deleteFacebookGroup(deleteId);
 });
 
 chapterForm.addEventListener('submit', event => {

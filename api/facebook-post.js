@@ -2,7 +2,8 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 const FACEBOOK_PAGE_ID = process.env.FACEBOOK_PAGE_ID;
 const FACEBOOK_PAGE_ACCESS_TOKEN = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
-const FACEBOOK_API_VERSION = process.env.FACEBOOK_API_VERSION || 'v17.0';
+const FACEBOOK_PAGES_JSON = process.env.FACEBOOK_PAGES_JSON;
+const FACEBOOK_API_VERSION = process.env.FACEBOOK_API_VERSION || 'v25.0';
 const SITE_URL = 'https://animeflv.lat';
 
 function slugify(value) {
@@ -13,14 +14,6 @@ function slugify(value) {
     .replace(/[^a-z0-9]+/gi, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 90);
-}
-
-function isLatinoTitle(value) {
-  const normalized = String(value || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-  return /\b(?:espanol latino|audio latino|latino(?:s|america|americano|americana)?|latina(?:s)?|latam|castellano)\b/.test(normalized);
 }
 
 function errorResponse(res, status, message) {
@@ -73,7 +66,68 @@ async function verifySupabaseAuth(token) {
     throw new Error('Usuario no autorizado.');
   }
 
+  const adminParams = new URLSearchParams({
+    select: 'user_id',
+    user_id: `eq.${user.id}`,
+    limit: '1'
+  });
+  const adminResponse = await fetch(`${SUPABASE_URL}/rest/v1/admin_users?${adminParams.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      apikey: SUPABASE_KEY,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!adminResponse.ok) {
+    throw new Error('No se pudo comprobar el permiso de administrador.');
+  }
+
+  const admins = await adminResponse.json();
+  if (!Array.isArray(admins) || !admins.length) {
+    throw new Error('El usuario no tiene permiso de administrador.');
+  }
+
   return user;
+}
+
+function getFacebookPages() {
+  if (FACEBOOK_PAGES_JSON) {
+    let parsed;
+    try {
+      parsed = JSON.parse(FACEBOOK_PAGES_JSON);
+    } catch {
+      throw new Error('FACEBOOK_PAGES_JSON no contiene JSON valido.');
+    }
+
+    if (!Array.isArray(parsed) || !parsed.length) {
+      throw new Error('FACEBOOK_PAGES_JSON debe ser una lista con al menos una pagina.');
+    }
+
+    const pages = parsed.map((page, index) => ({
+      name: String(page?.name || `Pagina ${index + 1}`).trim(),
+      pageId: String(page?.page_id || '').trim(),
+      accessToken: String(page?.access_token || '').trim()
+    }));
+
+    if (pages.some(page => !page.pageId || !page.accessToken)) {
+      throw new Error('Cada pagina en FACEBOOK_PAGES_JSON necesita page_id y access_token.');
+    }
+
+    return pages.filter((page, index, all) => (
+      all.findIndex(candidate => candidate.pageId === page.pageId) === index
+    ));
+  }
+
+  if (FACEBOOK_PAGE_ID && FACEBOOK_PAGE_ACCESS_TOKEN) {
+    return [{
+      name: 'Pagina de Facebook',
+      pageId: FACEBOOK_PAGE_ID,
+      accessToken: FACEBOOK_PAGE_ACCESS_TOKEN
+    }];
+  }
+
+  throw new Error('Falta FACEBOOK_PAGES_JSON o las variables FACEBOOK_PAGE_ID y FACEBOOK_PAGE_ACCESS_TOKEN.');
 }
 
 async function findAnimeSlugByTitle(animeTitle) {
@@ -106,20 +160,18 @@ async function findAnimeSlugByTitle(animeTitle) {
 
 function buildFacebookMessage(animeTitle, chapterNumber, link) {
   const title = String(animeTitle || '').trim();
-  const label = isLatinoTitle(title) ? `${title} +Latino+` : title;
-
-  return `Nuevo capítulo: ${label} - Capítulo ${chapterNumber}\n\nMira ahora: ${link}\n\nVer anime online en HD y español latino en AnimeFLV.`;
+  return `${title} capitulo ${chapterNumber}\n\n${link}`;
 }
 
-async function publishFacebookPost(message, link) {
+async function publishFacebookPost(page, message, link) {
   const body = new URLSearchParams({
     message,
     link,
-    access_token: FACEBOOK_PAGE_ACCESS_TOKEN,
+    access_token: page.accessToken,
     published: 'true'
   });
 
-  const response = await fetch(`https://graph.facebook.com/${FACEBOOK_API_VERSION}/${FACEBOOK_PAGE_ID}/feed`, {
+  const response = await fetch(`https://graph.facebook.com/${FACEBOOK_API_VERSION}/${encodeURIComponent(page.pageId)}/feed`, {
     method: 'POST',
     body
   });
@@ -129,7 +181,8 @@ async function publishFacebookPost(message, link) {
     throw new Error(`Facebook API error: ${text}`);
   }
 
-  return response.json();
+  const result = await response.json();
+  return { name: page.name, page_id: page.pageId, post_id: result.id };
 }
 
 module.exports = async function handler(req, res) {
@@ -138,8 +191,8 @@ module.exports = async function handler(req, res) {
     return errorResponse(res, 405, 'Method not allowed.');
   }
 
-  if (!SUPABASE_URL || !SUPABASE_KEY || !FACEBOOK_PAGE_ID || !FACEBOOK_PAGE_ACCESS_TOKEN) {
-    return errorResponse(res, 500, 'Faltan variables de entorno para publicar en Facebook.');
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return errorResponse(res, 500, 'Faltan variables de entorno de Supabase.');
   }
 
   try {
@@ -158,9 +211,38 @@ module.exports = async function handler(req, res) {
     const slug = await findAnimeSlugByTitle(animeTitle);
     const link = `${SITE_URL}/ver/${encodeURIComponent(slug)}-episodio-${encodeURIComponent(chapterNumber)}`;
     const message = buildFacebookMessage(animeTitle, chapterNumber, link);
-    const facebookResult = await publishFacebookPost(message, link);
+    const pages = getFacebookPages();
+    const settled = await Promise.allSettled(
+      pages.map(page => publishFacebookPost(page, message, link))
+    );
+    const published = settled
+      .filter(result => result.status === 'fulfilled')
+      .map(result => result.value);
+    const failed = settled
+      .map((result, index) => ({ result, page: pages[index] }))
+      .filter(item => item.result.status === 'rejected')
+      .map(item => ({
+        name: item.page.name,
+        page_id: item.page.pageId,
+        error: item.result.reason?.message || 'Error desconocido de Facebook.'
+      }));
 
-    res.status(200).json({ success: true, facebook: facebookResult });
+    if (!published.length) {
+      return res.status(502).json({
+        success: false,
+        error: 'Facebook rechazo la publicacion en todas las paginas.',
+        published,
+        failed
+      });
+    }
+
+    res.status(failed.length ? 207 : 200).json({
+      success: failed.length === 0,
+      partial: failed.length > 0,
+      link,
+      published,
+      failed
+    });
   } catch (error) {
     console.error(error);
     errorResponse(res, 500, error.message || 'Error al publicar en Facebook.');

@@ -2703,12 +2703,120 @@ footer .footer-note {
   font-family: Consolas, "Courier New", monospace;
 }
 
+.facebook-group-form,
+.facebook-groups-bulk-form,
+.facebook-distribution-editor {
+  margin-top: 14px;
+}
+
+.facebook-groups-bulk-form {
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.facebook-distribution-editor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.facebook-distribution-editor label {
+  display: block;
+  margin-bottom: 6px;
+  color: #ddd;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.facebook-distribution-editor input,
+.facebook-distribution-editor select,
+.facebook-distribution-editor textarea {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid rgba(105, 199, 255, 0.24);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff;
+  padding: 8px 10px;
+  font: inherit;
+  resize: vertical;
+}
+
+.facebook-distribution-editor input:focus,
+.facebook-distribution-editor select:focus,
+.facebook-distribution-editor textarea:focus {
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px rgba(105, 199, 255, 0.13);
+  outline: none;
+}
+
+.facebook-distribution-editor input[readonly] {
+  color: #b8b8b8;
+}
+
+.facebook-groups-table {
+  min-width: 760px;
+}
+
+.facebook-group-name {
+  display: block;
+  color: #fff;
+}
+
+.facebook-group-url {
+  display: block;
+  max-width: 340px;
+  margin-top: 3px;
+  color: #aaa;
+  font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.facebook-distribution-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.facebook-distribution-status.pending {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ccc;
+}
+
+.facebook-distribution-status.opened {
+  background: rgba(14, 165, 233, 0.16);
+  color: #bae6fd;
+}
+
+.facebook-distribution-status.completed {
+  background: rgba(116, 242, 165, 0.14);
+  color: #9df7bd;
+}
+
+.facebook-distribution-editor .admin-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}
+
 @media (max-width: 640px) {
   .admin-head {
     display: grid;
   }
 
   .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .facebook-distribution-editor {
     grid-template-columns: 1fr;
   }
 
